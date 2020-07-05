@@ -1,0 +1,13 @@
+struct VertexInput {
+    float4 position : POSITION;
+    float2 uv: UV;
+};
+
+struct PixelInput {
+    float4 position : SV_POSITION;
+    float2 uv : UV;
+};
+
+struct PixelOutput {
+    float4 color;
+};

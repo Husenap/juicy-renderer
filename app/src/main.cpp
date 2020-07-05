@@ -1,7 +1,13 @@
 ﻿#include <iostream>
 
+#include <App.h>
+
 int main() {
-	std::cout << "Hello World!" << std::endl;
+	JR::App app;
+
+	if (!app.Start()) {
+		return 1;
+	}
 
 	return 0;
 }
