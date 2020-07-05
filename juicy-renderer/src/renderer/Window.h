@@ -2,7 +2,7 @@
 
 namespace JR {
 
-class Window {
+class Window : public Module{
 public:
 	bool Create(const std::string& title, int width, int height);
 

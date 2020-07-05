@@ -1,5 +1,9 @@
 #include "Shader.h"
 
+#include "Framework.h"
+
+#include "ShaderReflection.h"
+
 namespace JR {
 
 HRESULT CompileShader(const std::string& filepath,
@@ -42,11 +46,99 @@ HRESULT CompileShader(const std::string& filepath,
 	return hr;
 }
 
-bool Shader::Load(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const std::string& filepath) {
+DXGI_FORMAT FormatFromComponentType(BYTE mask, D3D_REGISTER_COMPONENT_TYPE componentType) {
+	if (mask == 1) {
+		switch (componentType) {
+		case D3D_REGISTER_COMPONENT_UINT32:
+			return DXGI_FORMAT_R32_UINT;
+		case D3D_REGISTER_COMPONENT_SINT32:
+			return DXGI_FORMAT_R32_SINT;
+		case D3D_REGISTER_COMPONENT_FLOAT32:
+			return DXGI_FORMAT_R32_FLOAT;
+		}
+	} else if (mask <= 3) {
+		switch (componentType) {
+		case D3D_REGISTER_COMPONENT_UINT32:
+			return DXGI_FORMAT_R32G32_UINT;
+		case D3D_REGISTER_COMPONENT_SINT32:
+			return DXGI_FORMAT_R32G32_SINT;
+		case D3D_REGISTER_COMPONENT_FLOAT32:
+			return DXGI_FORMAT_R32G32_FLOAT;
+		}
+	} else if (mask <= 7) {
+		switch (componentType) {
+		case D3D_REGISTER_COMPONENT_UINT32:
+			return DXGI_FORMAT_R32G32B32_UINT;
+		case D3D_REGISTER_COMPONENT_SINT32:
+			return DXGI_FORMAT_R32G32B32_SINT;
+		case D3D_REGISTER_COMPONENT_FLOAT32:
+			return DXGI_FORMAT_R32G32B32_FLOAT;
+		}
+	} else if (mask <= 15) {
+		switch (componentType) {
+		case D3D_REGISTER_COMPONENT_UINT32:
+			return DXGI_FORMAT_R32G32B32A32_UINT;
+		case D3D_REGISTER_COMPONENT_SINT32:
+			return DXGI_FORMAT_R32G32B32A32_SINT;
+		case D3D_REGISTER_COMPONENT_FLOAT32:
+			return DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+	}
+
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+HRESULT CreateInputLayout(ComPtr<ID3DBlob> vsBlob, ComPtr<ID3D11InputLayout>& inputLayout) {
+	ShaderReflection shaderReflection;
+	shaderReflection.Reflect(vsBlob);
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDescs;
+
+	shaderReflection.ProcessInputParameters([&](auto paramDesc) {
+		auto elementDesc = D3D11_INPUT_ELEMENT_DESC{
+		    .SemanticName      = paramDesc.SemanticName,
+		    .SemanticIndex     = paramDesc.SemanticIndex,
+		    .Format            = FormatFromComponentType(paramDesc.Mask, paramDesc.ComponentType),
+		    .AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
+		};
+
+		inputElementDescs.push_back(elementDesc);
+	});
+
+	HRESULT hr = MM::Get<Framework>().Device()->CreateInputLayout(inputElementDescs.data(),
+	                                                              inputElementDescs.size(),
+	                                                              vsBlob->GetBufferPointer(),
+	                                                              vsBlob->GetBufferSize(),
+	                                                              &inputLayout);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create the Input Layout" << std::endl;
+		return hr;
+	}
+
+	return hr;
+}
+
+void CreateResourceBindings(ComPtr<ID3DBlob> psBlob) {
+	ShaderReflection shaderReflection;
+	shaderReflection.Reflect(psBlob);
+
+	shaderReflection.ProcessBoundResources(
+	    [](auto resourceDesc) { std::cout << "resource: " << resourceDesc.Name << std::endl; });
+}
+
+bool Shader::Load(const std::string& filepath) {
 	ComPtr<ID3DBlob> vsBlob;
+	ComPtr<ID3DBlob> gsBlob;
 	ComPtr<ID3DBlob> psBlob;
 
+	auto& device = MM::Get<Framework>().Device();
+
 	HRESULT hr = CompileShader(filepath, "VSMain", "vs_5_0", vsBlob);
+	if (FAILED(hr)) {
+		return false;
+	}
+
+	hr = CompileShader(filepath, "GSMain", "gs_5_0", gsBlob);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -62,32 +154,57 @@ bool Shader::Load(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& con
 		return false;
 	}
 
+	hr = CreateInputLayout(vsBlob, mInputLayout);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create input layout: " << filepath << std::endl;
+		return false;
+	}
+
+	hr = device->CreateGeometryShader(gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, &mGeometryShader);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create geometry shader!" << std::endl;
+		return false;
+	}
+
 	hr = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader);
 	if (FAILED(hr)) {
 		std::cerr << "Failed to create pixel shader!" << std::endl;
 		return false;
 	}
 
-	Bind(context);
-
-	D3D11_INPUT_ELEMENT_DESC ied[] = {
-	    {"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	    {"UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0}};
-
-	hr = device->CreateInputLayout(ied, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &mInputLayout);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create the Input Layout" << std::endl;
-		return false;
-	}
-
-	context->IASetInputLayout(mInputLayout.Get());
+	CreateResourceBindings(psBlob);
 
 	return true;
 }
 
-void Shader::Bind(ComPtr<ID3D11DeviceContext>& context) {
-	context->VSSetShader(mVertexShader.Get(), NULL, NULL);
-	context->PSSetShader(mPixelShader.Get(), NULL, NULL);
+void Shader::Bind() {
+	auto& context = MM::Get<Framework>().Context();
+
+	if (mVertexShader) {
+		context->IASetInputLayout(mInputLayout.Get());
+		context->VSSetShader(mVertexShader.Get(), NULL, NULL);
+	}
+	if (mGeometryShader) {
+		context->GSSetShader(mGeometryShader.Get(), NULL, NULL);
+	}
+	if (mPixelShader) {
+		context->PSSetShader(mPixelShader.Get(), NULL, NULL);
+	}
+}
+
+void Shader::Unbind() {
+	auto& context = MM::Get<Framework>().Context();
+
+	if (mVertexShader) {
+		context->IASetInputLayout(nullptr);
+		context->VSSetShader(nullptr, NULL, NULL);
+	}
+	if (mGeometryShader) {
+		context->GSSetShader(nullptr, NULL, NULL);
+	}
+	if (mPixelShader) {
+		context->PSSetShader(nullptr, NULL, NULL);
+	}
 }
 
 }  // namespace JR

@@ -1,18 +1,16 @@
 #pragma once
 
+#include "Buffer.h"
 #include "Shader.h"
+#include "Texture.h"
+#include "BlendState.h"
 
 namespace JR {
-class Window;
-}
 
-namespace JR {
-
-class Renderer {
+class Framework : public Module {
 public:
-	Renderer(Window& window)
-	    : mWindow(window) {}
-	~Renderer();
+	Framework() = default;
+	~Framework();
 
 	bool Initialize();
 
@@ -21,9 +19,10 @@ public:
 
 	void Render();
 
-private:
-	Window& mWindow;
+	const ComPtr<ID3D11Device>& Device() const { return mDevice; }
+	const ComPtr<ID3D11DeviceContext>& Context() const { return mContext; }
 
+private:
 	ComPtr<IDXGISwapChain> mSwapChain;
 	ComPtr<ID3D11Device> mDevice;
 	ComPtr<ID3D11DeviceContext> mContext;
@@ -33,9 +32,14 @@ private:
 	ComPtr<ID3D11Texture2D> mDepthBuffer;
 	ComPtr<ID3D11DepthStencilView> mDepthStencil;
 
-	ComPtr<ID3D11Buffer> mVertexBuffer;
-
+	Buffer mVertexBuffer;
 	Shader mShader;
+
+	Texture mTextureColor;
+	Texture mTextureBack;
+
+	BlendState mAlphaBlendState;
+	BlendState mPremultipliedBlendState;
 };
 
 }  // namespace JR

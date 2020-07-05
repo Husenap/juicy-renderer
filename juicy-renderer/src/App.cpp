@@ -1,16 +1,24 @@
 #include "App.h"
 
+#include "renderer/Framework.h"
+#include "renderer/Window.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 namespace JR {
 
-App::App()
-    : mRenderer(mWindow) {}
+App::App() {}
 
 bool App::Start() {
-	if (!mWindow.Create("Juicy", 800, 600)) {
+	MM::AddModule<Window>();
+	MM::AddModule<Framework>();
+
+	if (!MM::Get<Window>().Create("Juicy", 800, 800)) {
 		return false;
 	}
 
-	if (!mRenderer.Initialize()) {
+	if (!MM::Get<Framework>().Initialize()) {
 		return false;
 	}
 
@@ -18,14 +26,17 @@ bool App::Start() {
 		return false;
 	}
 
+	MM::Unload<Framework>();
+	MM::Unload<Window>();
+
 	return true;
 }
 
 bool App::Run() {
-	while (!mWindow.ShouldClose()) {
+	while (!MM::Get<Window>().ShouldClose()) {
 		glfwPollEvents();
 
-		mRenderer.Render();
+		MM::Get<Framework>().Render();
 	}
 
 	return true;

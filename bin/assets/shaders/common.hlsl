@@ -1,6 +1,9 @@
 struct VertexInput {
     float4 position : POSITION;
-    float2 uv: UV;
+};
+
+struct GeometryInput{
+    float4 position : SV_POSITION;
 };
 
 struct PixelInput {

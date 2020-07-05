@@ -1,5 +1,13 @@
 #pragma once
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <functional>
+#include <cstdint>
+#include <cmath>
+
 #include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -10,5 +18,10 @@ using Microsoft::WRL::ComPtr;
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include <iostream>
-#include <string>
+#include <stb_image.h>
+
+#include <glm/glm.hpp>
+
+#include "util/TypeId.h"
+#include "module/Module.h"
+#include "module/ModuleManager.h"
