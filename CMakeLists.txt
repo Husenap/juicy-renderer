@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(PROJECT_NAME "project_name")
+set(PROJECT_NAME "juicy-renderer")
 project(${PROJECT_NAME} C CXX)
 
 include("cmake/compiler_features.cmake")
@@ -13,4 +13,5 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "predefined")
 include(GoogleTest)
 enable_testing()
 
+add_subdirectory("juicy-renderer")
 add_subdirectory("app")
