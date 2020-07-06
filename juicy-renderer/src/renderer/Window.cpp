@@ -2,6 +2,15 @@
 
 namespace JR {
 
+static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!userWindow) {
+		return;
+	}
+
+	userWindow->Emit(EventResize{width, height});
+}
+
 bool Window::Create(const std::string& title, int width, int height) {
 	if (!glfwInit()) {
 		return false;
@@ -16,6 +25,10 @@ bool Window::Create(const std::string& title, int width, int height) {
 	if (!mWindow) {
 		return false;
 	}
+
+	glfwSetWindowUserPointer(mWindow, this);
+
+	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 
 	return true;
 }

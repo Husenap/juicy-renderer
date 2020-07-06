@@ -126,53 +126,79 @@ void CreateResourceBindings(ComPtr<ID3DBlob> psBlob) {
 	    [](auto resourceDesc) { std::cout << "resource: " << resourceDesc.Name << std::endl; });
 }
 
-bool Shader::Load(const std::string& filepath) {
-	ComPtr<ID3DBlob> vsBlob;
-	ComPtr<ID3DBlob> gsBlob;
-	ComPtr<ID3DBlob> psBlob;
+bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::string& filepath) {
+	mShaderType = static_cast<ShaderType>(shaderType);
 
-	auto& device = MM::Get<Framework>().Device();
+	const auto compileVertexShader = [&]() {
+		if (!(mShaderType & ShaderType::Vertex)) {
+			return;
+		}
 
-	HRESULT hr = CompileShader(filepath, "VSMain", "vs_5_0", vsBlob);
-	if (FAILED(hr)) {
-		return false;
-	}
+		ComPtr<ID3DBlob> vsBlob;
 
-	hr = CompileShader(filepath, "GSMain", "gs_5_0", gsBlob);
-	if (FAILED(hr)) {
-		return false;
-	}
+		if (FAILED(CompileShader(filepath, "VSMain", "vs_5_0", vsBlob))) {
+			std::cerr << "Failed to compile vertex shader!" << std::endl;
+			return;
+		}
 
-	hr = CompileShader(filepath, "PSMain", "ps_5_0", psBlob);
-	if (FAILED(hr)) {
-		return false;
-	}
+		auto& device = MM::Get<Framework>().Device();
+		if (FAILED(device->CreateVertexShader(
+		        vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, &mVertexShader))) {
+			std::cerr << "Failed to create vertex shader!" << std::endl;
+			return;
+		}
 
-	hr = device->CreateVertexShader(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, &mVertexShader);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create vertex shader!" << std::endl;
-		return false;
-	}
+		if (FAILED(CreateInputLayout(vsBlob, mInputLayout))) {
+			std::cerr << "Failed to create input layout: " << filepath << std::endl;
+			return;
+		}
+	};
 
-	hr = CreateInputLayout(vsBlob, mInputLayout);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create input layout: " << filepath << std::endl;
-		return false;
-	}
+	const auto compileGeometryShader = [&]() {
+		if (!(mShaderType & ShaderType::Geometry)) {
+			return;
+		}
 
-	hr = device->CreateGeometryShader(gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, &mGeometryShader);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create geometry shader!" << std::endl;
-		return false;
-	}
+		ComPtr<ID3DBlob> gsBlob;
 
-	hr = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create pixel shader!" << std::endl;
-		return false;
-	}
+		if (FAILED(CompileShader(filepath, "GSMain", "gs_5_0", gsBlob))) {
+			std::cerr << "Failed to compile geometry shader!";
+			return;
+		}
 
-	CreateResourceBindings(psBlob);
+		auto& device = MM::Get<Framework>().Device();
+		if (FAILED(device->CreateGeometryShader(
+		        gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, &mGeometryShader))) {
+			std::cerr << "Failed to create geometry shader!" << std::endl;
+			return;
+		}
+	};
+
+	const auto compilePixelShader = [&]() {
+		if (!(mShaderType & ShaderType::Pixel)) {
+			return;
+		}
+
+		ComPtr<ID3DBlob> psBlob;
+
+		if (FAILED(CompileShader(filepath, "PSMain", "ps_5_0", psBlob))) {
+			std::cerr << "Failed to compile pixel shader!" << std::endl;
+			return;
+		}
+
+		auto& device = MM::Get<Framework>().Device();
+		if (FAILED(
+		        device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader))) {
+			std::cerr << "Failed to create pixel shader!" << std::endl;
+			return;
+		}
+
+		CreateResourceBindings(psBlob);
+	};
+
+	compileVertexShader();
+	compileGeometryShader();
+	compilePixelShader();
 
 	return true;
 }
@@ -180,14 +206,14 @@ bool Shader::Load(const std::string& filepath) {
 void Shader::Bind() {
 	auto& context = MM::Get<Framework>().Context();
 
-	if (mVertexShader) {
+	if (mShaderType & ShaderType::Vertex && mVertexShader) {
 		context->IASetInputLayout(mInputLayout.Get());
 		context->VSSetShader(mVertexShader.Get(), NULL, NULL);
 	}
-	if (mGeometryShader) {
+	if (mShaderType & ShaderType::Geometry && mGeometryShader) {
 		context->GSSetShader(mGeometryShader.Get(), NULL, NULL);
 	}
-	if (mPixelShader) {
+	if (mShaderType & ShaderType::Pixel && mPixelShader) {
 		context->PSSetShader(mPixelShader.Get(), NULL, NULL);
 	}
 }
@@ -195,14 +221,14 @@ void Shader::Bind() {
 void Shader::Unbind() {
 	auto& context = MM::Get<Framework>().Context();
 
-	if (mVertexShader) {
+	if (mShaderType & ShaderType::Vertex && mVertexShader) {
 		context->IASetInputLayout(nullptr);
 		context->VSSetShader(nullptr, NULL, NULL);
 	}
-	if (mGeometryShader) {
+	if (mShaderType & ShaderType::Geometry && mGeometryShader) {
 		context->GSSetShader(nullptr, NULL, NULL);
 	}
-	if (mPixelShader) {
+	if (mShaderType & ShaderType::Pixel && mPixelShader) {
 		context->PSSetShader(nullptr, NULL, NULL);
 	}
 }

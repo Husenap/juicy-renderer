@@ -2,7 +2,12 @@
 
 namespace JR {
 
-class Window : public Module{
+struct EventResize {
+	int width;
+	int height;
+};
+
+class Window : public Module, public MessageEmitter {
 public:
 	bool Create(const std::string& title, int width, int height);
 

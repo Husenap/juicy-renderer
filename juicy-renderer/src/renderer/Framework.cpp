@@ -23,6 +23,9 @@ bool Framework::Initialize() {
 		return false;
 	}
 
+	mResizeToken = MM::Get<Window>().Subscribe<EventResize>(
+	    [&](EventResize message) { ResizeBackbuffer(message.width, message.height); });
+
 	return true;
 }
 
@@ -68,50 +71,9 @@ bool Framework::InitSwapChain() {
 }
 
 bool Framework::InitResources() {
-	ComPtr<ID3D11Texture2D> backBuffer;
-	HRESULT hr = mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-	if (FAILED(hr)) {
-		std::cerr << "Failed to get Back Buffer!" << std::endl;
-		return false;
-	}
+	CreateTargets(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
-	hr = mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTarget);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create Render Target View" << std::endl;
-		return false;
-	}
-
-	CD3D11_TEXTURE2D_DESC dbd(DXGI_FORMAT_D32_FLOAT,
-	                          MM::Get<Window>().GetWidth(),
-	                          MM::Get<Window>().GetHeight(),
-	                          1,
-	                          1,
-	                          D3D11_BIND_DEPTH_STENCIL);
-
-	hr = mDevice->CreateTexture2D(&dbd, nullptr, &mDepthBuffer);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create Depth Buffer!" << std::endl;
-		return false;
-	}
-
-	CD3D11_DEPTH_STENCIL_VIEW_DESC dsvd(mDepthBuffer.Get(), D3D11_DSV_DIMENSION_TEXTURE2D);
-
-	hr = mDevice->CreateDepthStencilView(mDepthBuffer.Get(), &dsvd, &mDepthStencil);
-	if (FAILED(hr)) {
-		std::cerr << "Failed to create Depth Stencil View" << std::endl;
-		return false;
-	}
-
-	auto viewport = D3D11_VIEWPORT{
-	    .TopLeftX = 0,
-	    .TopLeftY = 0,
-	    .Width    = static_cast<float>(MM::Get<Window>().GetWidth()),
-	    .Height   = static_cast<float>(MM::Get<Window>().GetHeight()),
-	};
-
-	mContext->RSSetViewports(1, &viewport);
-
-	if (!mShader.Load("assets/shaders/basic.hlsl")) {
+	if (!mShader.Load(Shader::Vertex | Shader::Geometry | Shader::Pixel, "assets/shaders/basic.hlsl")) {
 		return false;
 	}
 
@@ -133,7 +95,8 @@ bool Framework::InitResources() {
 	mVertexBuffer.SetData(vertices);
 
 	mAlphaBlendState.Create(D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
-	mPremultipliedBlendState.Create(D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA);
+	mPremultipliedBlendState.Create(
+	    D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA);
 
 	return true;
 }
@@ -161,6 +124,68 @@ void Framework::Render() {
 	mContext->Draw(1, 0);
 
 	mSwapChain->Present(0, 0);
+}
+
+bool Framework::CreateTargets(int width, int height) {
+	ComPtr<ID3D11Texture2D> backBuffer;
+	HRESULT hr = mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+	if (FAILED(hr)) {
+		std::cerr << "Failed to get Back Buffer!" << std::endl;
+		return false;
+	}
+
+	hr = mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTarget);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create Render Target View" << std::endl;
+		return false;
+	}
+
+	CD3D11_TEXTURE2D_DESC dbd(DXGI_FORMAT_D32_FLOAT, width, height, 1, 1, D3D11_BIND_DEPTH_STENCIL);
+
+	hr = mDevice->CreateTexture2D(&dbd, nullptr, &mDepthBuffer);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create Depth Buffer!" << std::endl;
+		return false;
+	}
+
+	CD3D11_DEPTH_STENCIL_VIEW_DESC dsvd(mDepthBuffer.Get(), D3D11_DSV_DIMENSION_TEXTURE2D);
+
+	hr = mDevice->CreateDepthStencilView(mDepthBuffer.Get(), &dsvd, &mDepthStencil);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to create Depth Stencil View" << std::endl;
+		return false;
+	}
+
+	mViewport = D3D11_VIEWPORT{
+	    .TopLeftX = 0,
+	    .TopLeftY = 0,
+	    .Width    = static_cast<float>(width),
+	    .Height   = static_cast<float>(height),
+	};
+
+	mContext->RSSetViewports(1, &mViewport);
+
+	return true;
+}
+
+void Framework::ResizeBackbuffer(int width, int height) {
+	if (width == 0 || height == 0) {
+		return;
+	}
+
+	mContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	mRenderTarget.Reset();
+	mDepthBuffer.Reset();
+	mDepthStencil.Reset();
+
+	HRESULT hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+	if (FAILED(hr)) {
+		std::cerr << "Failed to resize buffers" << std::endl;
+		return;
+	}
+
+	CreateTargets(width, height);
 }
 
 }  // namespace JR

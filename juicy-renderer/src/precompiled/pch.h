@@ -23,5 +23,6 @@ using Microsoft::WRL::ComPtr;
 #include <glm/glm.hpp>
 
 #include "util/TypeId.h"
+#include "util/MessageEmitter.h"
 #include "module/Module.h"
 #include "module/ModuleManager.h"
