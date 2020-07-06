@@ -1,9 +1,9 @@
 #pragma once
 
+#include "BlendState.h"
 #include "Buffer.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "BlendState.h"
 
 namespace JR {
 

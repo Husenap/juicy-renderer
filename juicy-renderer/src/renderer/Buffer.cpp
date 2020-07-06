@@ -7,7 +7,7 @@ namespace JR {
 bool Buffer::Create(D3D11_BUFFER_DESC bufferDesc) {
 	HRESULT hr = MM::Get<Framework>().Device()->CreateBuffer(&bufferDesc, nullptr, &mBuffer);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to Create Buffer" << std::endl;
+		LOG_ERROR("Failed to Create Buffer");
 		return false;
 	}
 

@@ -4,6 +4,9 @@ set(src_precompiled
     "src/precompiled/pch.h")
 
 set(src_util
+    "src/util/Logger.h"
+    "src/util/Logger.cpp"
+    "src/util/FileWatcher.h"
     "src/util/MessageEmitter.h"
     "src/util/TypeId.h"
     "src/util/TypeId.cpp")

@@ -7,20 +7,31 @@
 namespace JR {
 
 bool Texture::CreateFromFile(const std::string& filepath) {
-	int32_t w, h, comp;
-	uint8_t* rawData = stbi_load(filepath.c_str(), &w, &h, &comp, STBI_rgb_alpha);
+	const auto imageLoader = [=]() {
+		int32_t w, h, comp;
+		uint8_t* rawData = stbi_load(filepath.c_str(), &w, &h, &comp, STBI_rgb_alpha);
 
-	if (!rawData) {
-		std::cerr << "Failed to load image: " << filepath << std::endl;
-		return false;
-	}
+		if (!rawData) {
+			LOG_ERROR("Failed to load image: %s", filepath.c_str());
+			return false;
+		}
 
-	if (!Create(w, h, DXGI_FORMAT_R8G8B8A8_UNORM, rawData)) {
+		if (!Create(w, h, DXGI_FORMAT_R8G8B8A8_UNORM, rawData)) {
+			LOG_ERROR("Failed to create image: %s", filepath.c_str());
+			stbi_image_free(rawData);
+			return false;
+		}
+
 		stbi_image_free(rawData);
+
+		return true;
+	};
+
+	if (!imageLoader()) {
 		return false;
 	}
 
-	stbi_image_free(rawData);
+	MM::Get<FileWatcher>().Watch(filepath, [=]() { imageLoader(); });
 
 	return true;
 }
@@ -44,7 +55,7 @@ bool Texture::Create(const TextureCreateDesc& createDesc) {
 	HRESULT hr = MM::Get<Framework>().Device()->CreateTexture2D(
 	    &textureDesc, createDesc.data ? &initialData : nullptr, &mTexture);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create texture!" << std::endl;
+		LOG_ERROR("Failed to create texture!");
 		return false;
 	}
 

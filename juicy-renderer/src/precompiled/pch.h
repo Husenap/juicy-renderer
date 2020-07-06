@@ -1,16 +1,18 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
-#include <functional>
-#include <cstdint>
+#include <array>
 #include <cmath>
+#include <cstdint>
+#include <filesystem>
+#include <functional>
+#include <map>
+#include <string>
+#include <thread>
+#include <vector>
 
-#include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include <windows.h>
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
 
@@ -22,7 +24,11 @@ using Microsoft::WRL::ComPtr;
 
 #include <glm/glm.hpp>
 
-#include "util/TypeId.h"
-#include "util/MessageEmitter.h"
 #include "module/Module.h"
+
+#include "util/Logger.h"
+
 #include "module/ModuleManager.h"
+#include "util/FileWatcher.h"
+#include "util/MessageEmitter.h"
+#include "util/TypeId.h"

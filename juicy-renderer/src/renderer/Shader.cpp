@@ -31,11 +31,10 @@ HRESULT CompileShader(const std::string& filepath,
 	                                &errorBlob);
 
 	if (FAILED(hr)) {
-		std::cerr << "Failed to compile shader: " << filepath << std::endl;
-		std::cerr << "Entry Point: " << entryPoint << std::endl;
+		LOG_ERROR("Failed to compile shader[%s]: %s", entryPoint.c_str(), filepath.c_str());
 
 		if (errorBlob) {
-			std::cerr << static_cast<char*>(errorBlob->GetBufferPointer()) << std::endl;
+			LOG_ERROR("Shader Error:\n%s\n", static_cast<char*>(errorBlob->GetBufferPointer()));
 		}
 
 		return hr;
@@ -111,7 +110,7 @@ HRESULT CreateInputLayout(ComPtr<ID3DBlob> vsBlob, ComPtr<ID3D11InputLayout>& in
 	                                                              vsBlob->GetBufferSize(),
 	                                                              &inputLayout);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create the Input Layout" << std::endl;
+		LOG_ERROR("Failed to create Input Layout");
 		return hr;
 	}
 
@@ -123,13 +122,13 @@ void CreateResourceBindings(ComPtr<ID3DBlob> psBlob) {
 	shaderReflection.Reflect(psBlob);
 
 	shaderReflection.ProcessBoundResources(
-	    [](auto resourceDesc) { std::cout << "resource: " << resourceDesc.Name << std::endl; });
+	    [](auto resourceDesc) { LOG_INFO("Shader Resource: %s", resourceDesc.Name); });
 }
 
 bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::string& filepath) {
 	mShaderType = static_cast<ShaderType>(shaderType);
 
-	const auto compileVertexShader = [&]() {
+	const auto compileVertexShader = [=]() {
 		if (!(mShaderType & ShaderType::Vertex)) {
 			return;
 		}
@@ -137,24 +136,21 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 		ComPtr<ID3DBlob> vsBlob;
 
 		if (FAILED(CompileShader(filepath, "VSMain", "vs_5_0", vsBlob))) {
-			std::cerr << "Failed to compile vertex shader!" << std::endl;
 			return;
 		}
 
 		auto& device = MM::Get<Framework>().Device();
 		if (FAILED(device->CreateVertexShader(
 		        vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, &mVertexShader))) {
-			std::cerr << "Failed to create vertex shader!" << std::endl;
 			return;
 		}
 
 		if (FAILED(CreateInputLayout(vsBlob, mInputLayout))) {
-			std::cerr << "Failed to create input layout: " << filepath << std::endl;
 			return;
 		}
 	};
 
-	const auto compileGeometryShader = [&]() {
+	const auto compileGeometryShader = [=]() {
 		if (!(mShaderType & ShaderType::Geometry)) {
 			return;
 		}
@@ -162,19 +158,17 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 		ComPtr<ID3DBlob> gsBlob;
 
 		if (FAILED(CompileShader(filepath, "GSMain", "gs_5_0", gsBlob))) {
-			std::cerr << "Failed to compile geometry shader!";
 			return;
 		}
 
 		auto& device = MM::Get<Framework>().Device();
 		if (FAILED(device->CreateGeometryShader(
 		        gsBlob->GetBufferPointer(), gsBlob->GetBufferSize(), NULL, &mGeometryShader))) {
-			std::cerr << "Failed to create geometry shader!" << std::endl;
 			return;
 		}
 	};
 
-	const auto compilePixelShader = [&]() {
+	const auto compilePixelShader = [=]() {
 		if (!(mShaderType & ShaderType::Pixel)) {
 			return;
 		}
@@ -182,14 +176,12 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 		ComPtr<ID3DBlob> psBlob;
 
 		if (FAILED(CompileShader(filepath, "PSMain", "ps_5_0", psBlob))) {
-			std::cerr << "Failed to compile pixel shader!" << std::endl;
 			return;
 		}
 
 		auto& device = MM::Get<Framework>().Device();
 		if (FAILED(
 		        device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader))) {
-			std::cerr << "Failed to create pixel shader!" << std::endl;
 			return;
 		}
 
@@ -199,6 +191,12 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 	compileVertexShader();
 	compileGeometryShader();
 	compilePixelShader();
+
+	MM::Get<FileWatcher>().Watch(filepath, [=]() {
+		compileVertexShader();
+		compileGeometryShader();
+		compilePixelShader();
+	});
 
 	return true;
 }

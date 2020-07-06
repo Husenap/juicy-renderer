@@ -24,7 +24,7 @@ bool Framework::Initialize() {
 	}
 
 	mResizeToken = MM::Get<Window>().Subscribe<EventResize>(
-	    [&](EventResize message) { ResizeBackbuffer(message.width, message.height); });
+	    [&](const EventResize& message) { ResizeBackbuffer(message.width, message.height); });
 
 	return true;
 }
@@ -63,7 +63,7 @@ bool Framework::InitSwapChain() {
 	                                           &mContext);
 
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create Swap Chain!" << std::endl;
+		LOG_FATAL("Failed to create Swap Chain!");
 		return false;
 	}
 
@@ -77,10 +77,10 @@ bool Framework::InitResources() {
 		return false;
 	}
 
-	if (!mTextureColor.CreateFromFile("assets/textures/pillar.png")) {
+	if (!mTextureColor.CreateFromFile("assets/textures/groundprops.png")) {
 		return false;
 	}
-	if (!mTextureBack.CreateFromFile("assets/textures/pillar_back.png")) {
+	if (!mTextureBack.CreateFromFile("assets/textures/groundprops_back.png")) {
 		return false;
 	}
 
@@ -89,7 +89,7 @@ bool Framework::InitResources() {
 	                                             D3D11_BIND_VERTEX_BUFFER,
 	                                             D3D11_USAGE_DYNAMIC,
 	                                             D3D11_CPU_ACCESS_WRITE))) {
-		std::cerr << "Failed to create vertex buffer!" << std::endl;
+		LOG_ERROR("Failed to create Vertex Buffer!");
 		return false;
 	}
 	mVertexBuffer.SetData(vertices);
@@ -130,13 +130,13 @@ bool Framework::CreateTargets(int width, int height) {
 	ComPtr<ID3D11Texture2D> backBuffer;
 	HRESULT hr = mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
 	if (FAILED(hr)) {
-		std::cerr << "Failed to get Back Buffer!" << std::endl;
+		LOG_ERROR("Failed to get Back Buffer from Swap Chain");
 		return false;
 	}
 
 	hr = mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTarget);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create Render Target View" << std::endl;
+		LOG_ERROR("Failed to create Render Target View");
 		return false;
 	}
 
@@ -144,7 +144,7 @@ bool Framework::CreateTargets(int width, int height) {
 
 	hr = mDevice->CreateTexture2D(&dbd, nullptr, &mDepthBuffer);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create Depth Buffer!" << std::endl;
+		LOG_ERROR("Failed to create Depth Buffer");
 		return false;
 	}
 
@@ -152,7 +152,7 @@ bool Framework::CreateTargets(int width, int height) {
 
 	hr = mDevice->CreateDepthStencilView(mDepthBuffer.Get(), &dsvd, &mDepthStencil);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to create Depth Stencil View" << std::endl;
+		LOG_ERROR("Failed to create Depth Stencil View");
 		return false;
 	}
 
@@ -181,7 +181,7 @@ void Framework::ResizeBackbuffer(int width, int height) {
 
 	HRESULT hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to resize buffers" << std::endl;
+		LOG_ERROR("Failed to Resize Buffers");
 		return;
 	}
 
