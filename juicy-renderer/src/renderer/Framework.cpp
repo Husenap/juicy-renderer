@@ -9,6 +9,8 @@ struct VertexData {
 namespace JR {
 
 Framework::~Framework() {
+	ImGui_ImplDX11_Shutdown();
+
 	if (mSwapChain) {
 		mSwapChain->SetFullscreenState(FALSE, NULL);
 	}
@@ -67,6 +69,12 @@ bool Framework::InitSwapChain() {
 		return false;
 	}
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui_ImplDX11_Init(mDevice.Get(), mContext.Get());
+	ImGui_ImplWin32_Init(MM::Get<Window>().GetHandle());
+
 	return true;
 }
 
@@ -122,6 +130,16 @@ void Framework::Render() {
 	mContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	mContext->Draw(1, 0);
+
+	ImGui_ImplDX11_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
+
+	static bool potato = true;
+	ImGui::ShowDemoWindow(&potato);
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 	mSwapChain->Present(0, 0);
 }

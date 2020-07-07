@@ -5,6 +5,7 @@ project(${PROJECT_NAME} C CXX)
 include("cmake/compiler_features.cmake")
 include("cmake/compiler_warnings.cmake")
 include("cmake/conan.cmake")
+include("cmake/imgui.cmake")
 
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

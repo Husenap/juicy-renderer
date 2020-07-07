@@ -32,3 +32,9 @@ using Microsoft::WRL::ComPtr;
 #include "util/FileWatcher.h"
 #include "util/MessageEmitter.h"
 #include "util/TypeId.h"
+
+#include <imgui.h>
+#include <examples/imgui_impl_win32.h>
+#include <examples/imgui_impl_dx11.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

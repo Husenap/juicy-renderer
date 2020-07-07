@@ -2,6 +2,8 @@
 
 namespace JR {
 
+static WNDPROC currentWndProc;
+
 static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
 	if (!userWindow) {
@@ -9,6 +11,12 @@ static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int hei
 	}
 
 	userWindow->Emit(EventResize{width, height});
+}
+
+static LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
+
+	return CallWindowProc(currentWndProc, hWnd, msg, wParam, lParam);
 }
 
 bool Window::Create(const std::string& title, int width, int height) {
@@ -29,6 +37,10 @@ bool Window::Create(const std::string& title, int width, int height) {
 	glfwSetWindowUserPointer(mWindow, this);
 
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
+
+	
+	currentWndProc = (WNDPROC)GetWindowLongPtr(GetHandle(), -4);
+	SetWindowLongPtr(GetHandle(), -4, (LONG_PTR)MyWndProc);
 
 	return true;
 }
