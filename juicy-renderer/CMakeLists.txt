@@ -16,20 +16,30 @@ set(src_module
     "src/module/ModuleManager.h")
 
 set(src_renderer
-    "src/renderer/Buffer.h"
-    "src/renderer/Buffer.cpp"
-    "src/renderer/Texture.h"
-    "src/renderer/Texture.cpp"
-    "src/renderer/BlendState.h"
-    "src/renderer/BlendState.cpp"
-    "src/renderer/ShaderReflection.h"
-    "src/renderer/ShaderReflection.cpp"
-    "src/renderer/Shader.h"
-    "src/renderer/Shader.cpp"
-    "src/renderer/Framework.h"
-    "src/renderer/Framework.cpp"
-    "src/renderer/Window.h"
-    "src/renderer/Window.cpp")
+    "src/renderer/RendererManager.h"
+    "src/renderer/RendererManager.cpp"
+    "src/renderer/JuicyRenderer.h"
+    "src/renderer/JuicyRenderer.cpp")
+
+set(src_framework
+    "src/framework/Buffer.h"
+    "src/framework/Buffer.cpp"
+    "src/framework/Texture.h"
+    "src/framework/Texture.cpp"
+    "src/framework/BlendState.h"
+    "src/framework/BlendState.cpp"
+    "src/framework/ShaderReflection.h"
+    "src/framework/ShaderReflection.cpp"
+    "src/framework/Shader.h"
+    "src/framework/Shader.cpp"
+    "src/framework/Framework.h"
+    "src/framework/Framework.cpp"
+    "src/framework/Window.h"
+    "src/framework/Window.cpp")
+
+set(src_world
+    "src/world/Scene.h"
+    "src/world/Scene.cpp")
 
 set(src_files
     "src/App.h"
@@ -37,7 +47,9 @@ set(src_files
     ${src_precompiled}
     ${src_util}
     ${src_module}
-    ${src_renderer})
+    ${src_renderer}
+    ${src_framemwork}
+    ${src_world})
 
 # Project
 add_library(${target_name} ${src_files})
@@ -46,7 +58,7 @@ source_group("src" FILES "src/main.cpp")
 
 target_precompile_headers(${target_name} PUBLIC ${src_precompiled})
 
-target_link_libraries(${target_name} d3d11 d3dcompiler CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm imgui)
+target_link_libraries(${target_name} d3d11 d3dcompiler CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

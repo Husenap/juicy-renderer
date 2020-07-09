@@ -24,6 +24,10 @@ bool App::Start() {
 		return false;
 	}
 
+	if (!mScene.Init()) {
+		return false;
+	}
+
 	if (!Run()) {
 		return false;
 	}
@@ -40,6 +44,8 @@ bool App::Run() {
 		MM::Get<FileWatcher>().FlushChanges();
 
 		MM::Get<Framework>().Render();
+
+		mScene.Update(static_cast<float>(glfwGetTime()));
 
 		std::this_thread::yield();
 	}
