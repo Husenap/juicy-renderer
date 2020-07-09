@@ -23,7 +23,7 @@ private:
 	void DoGUI();
 
 	Shader mShader;
-	std::array<RCSprite, 1024*8> mSprites;
+	std::array<RCSprite, 2048> mSprites;
 	Buffer mSpriteBuffer;
 
 	struct ConstantBufferData {

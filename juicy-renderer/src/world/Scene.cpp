@@ -20,7 +20,7 @@ struct Sprite {
 bool Scene::Init() {
 	mLastTime = mCurrentTime = mDeltaTime = 0.f;
 
-	for (auto i = 0; i < 1024*8; ++i) {
+	for (auto i = 0; i < 1024; ++i) {
 		auto entity = mECS.create();
 		mECS.emplace<Transform>(entity, glm::vec3(i*0.00000001f+0.01f, 0.f, 0.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
 		mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
