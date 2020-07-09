@@ -28,6 +28,8 @@ public:
 	const ComPtr<ID3D11Device>& Device() const { return mDevice; }
 	const ComPtr<ID3D11DeviceContext>& Context() const { return mContext; }
 
+	RendererManager& Renderer() { return mRendererManager; }
+
 private:
 	bool CreateTargets(int width, int height);
 	void ResizeBackbuffer(int width, int height);
@@ -40,9 +42,6 @@ private:
 	ComPtr<ID3D11Texture2D> mDepthBuffer;
 	ComPtr<ID3D11DepthStencilView> mDepthStencil;
 	ComPtr<ID3D11DepthStencilState> mDepthStencilState;
-
-	BlendState mAlphaBlendState;
-	BlendState mPremultipliedBlendState;
 
 	MessageToken mResizeToken;
 

@@ -16,30 +16,31 @@ bool JuicyRenderer::Init() {
 		return false;
 	}
 
-	mVertices = {
-	    {{-1.1f, 0.0f, 1.0f, 1.0f}, {0.0, 0.0, 0.5, 0.5}},
-	    {{1.1f, 0.0f, 1.0f, 1.0f}, {0.5, 0.5, 1.0, 1.0}},
-	    {{7.5f, 0.0f, 7.5f, 1.0f}, {0.0, 0.5, 0.5, 1.0}},
-	};
-	if (!mVertexBuffer.Create(CD3D11_BUFFER_DESC(
-	        sizeof(VertexData) * 512, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE))) {
+	if (!mSpriteBuffer.Create(CD3D11_BUFFER_DESC(sizeof(mSprites[0]) * mSprites.max_size(),
+	                                             D3D11_BIND_VERTEX_BUFFER,
+	                                             D3D11_USAGE_DYNAMIC,
+	                                             D3D11_CPU_ACCESS_WRITE))) {
 		LOG_ERROR("Failed to create Vertex Buffer!");
 		return false;
 	}
-	mVertexBuffer.SetData(mVertices);
 
 	mConstantBuffer.Create(CD3D11_BUFFER_DESC(
 	    sizeof(ConstantBufferData), D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE));
 
+	if (!mPremultipliedBlendState.Create(
+	        D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA)) {
+		return false;
+	}
+
+	if (!mSamplerState.Create(SamplerState::Filter::Point, SamplerState::Address::Wrap)) {
+		return false;
+	}
+
 	return true;
 }
 void JuicyRenderer::Render() {
-	auto& context = MM::Get<Framework>().Context();
-
-	std::vector<VertexData> vertices = mVertices;
-	std::sort(vertices.begin(), vertices.end(), [](auto a, auto b) { return a.position.z > b.position.z; });
-	mVertexBuffer.SetData(vertices);
-
+	mPremultipliedBlendState.Bind();
+	mSamplerState.Bind(0);
 	mShader.Bind();
 	mTextureColor.Bind(0);
 	mTextureBack.Bind(1);
@@ -47,17 +48,43 @@ void JuicyRenderer::Render() {
 	UpdateConstantBuffer();
 	mConstantBuffer.Bind(0);
 
-	mVertexBuffer.Bind(sizeof(VertexData), 0);
+	sizeof(RCSprite);
 
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+	std::size_t remaining = mSpriteRenderCommands.size();
+	while (remaining > 0) {
+		std::size_t batchSize = std::min(remaining, mSprites.max_size());
 
-	context->Draw(vertices.size(), 0);
+		std::memcpy(&mSprites[0], &mSpriteRenderCommands[mSpriteRenderCommands.size() - remaining], batchSize * sizeof(mSprites[0]));
+
+		RenderBatch(batchSize);
+
+		remaining -= batchSize;
+	}
+	mSpriteRenderCommands.clear();
 
 	mTextureColor.Unbind(0);
 	mTextureBack.Unbind(0);
 	mShader.Unbind();
-
+	mSamplerState.Unbind(0);
 	DoGUI();
+}
+
+void JuicyRenderer::RenderBatch(std::size_t batchSize) {
+	auto& context = MM::Get<Framework>().Context();
+
+	std::sort(
+	    mSprites.begin(), mSprites.begin() + batchSize, [](auto a, auto b) { return a.position.z > b.position.z; });
+	mSpriteBuffer.SetData(mSprites.data(), batchSize * sizeof(mSprites[0]));
+
+	mSpriteBuffer.Bind(sizeof(mSprites[0]), 0);
+
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(batchSize, 0);
+}
+
+void JuicyRenderer::Submit(RCSprite renderCommand) {
+	mSpriteRenderCommands.push_back(renderCommand);
 }
 
 void JuicyRenderer::DoGUI() {
@@ -78,24 +105,6 @@ void JuicyRenderer::DoGUI() {
 	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
 	ImGui::PopStyleVar(2);
-
-	static bool potato = true;
-	if (potato) {
-		ImGui::ShowDemoWindow(&potato);
-	}
-
-	if (ImGui::Begin("VERTICES")) {
-		for (auto& vertex : mVertices) {
-			ImGui::PushID(ImGui::GetID(&vertex));
-			ImGui::DragFloat3("position", &vertex.position.x, 0.05f);
-			ImGui::DragFloat4("uv", &vertex.uv.x, 0.05f);
-			ImGui::ColorEdit4("tint", &vertex.tint.x);
-			ImGui::SliderFloat("Blend Mode", &vertex.blendMode, 0.0f, 1.0f, "Additive - %.3f - Alpha Blend");
-			ImGui::Separator();
-			ImGui::PopID();
-		}
-	}
-	ImGui::End();
 }
 
 void JuicyRenderer::UpdateConstantBuffer() {
@@ -103,6 +112,7 @@ void JuicyRenderer::UpdateConstantBuffer() {
 
 	mConstantBufferData.ProjectionMatrix = glm::perspectiveFovLH(glm::radians(80.f), size.x, size.y, 0.01f, 100.f);
 	mConstantBufferData.Resolution       = glm::vec4(size.x, size.y, size.x / size.y, size.y / size.x);
+	mConstantBufferData.Time             = glm::vec4((float)glfwGetTime());
 
 	mConstantBuffer.SetData(mConstantBufferData);
 }

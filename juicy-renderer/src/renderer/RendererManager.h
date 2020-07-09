@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JuicyRenderer.h"
+#include "RenderCommand.h"
 
 namespace JR {
 
@@ -13,16 +14,18 @@ public:
 
 	void Render();
 
-	void SetupImGuiStyle();
+	void Submit(const RenderCommand& renderCommand);
 
 private:
 	void OnResize(int width, int height);
+	void SetupImGuiStyle();
 
+	MessageToken mResizeToken;
 	D3D11_VIEWPORT mViewport;
 
 	JuicyRenderer mJuicyRenderer;
 
-	MessageToken mResizeToken;
+	std::vector<RenderCommand> mRenderCommands;
 };
 
 }  // namespace JR

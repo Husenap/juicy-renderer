@@ -69,10 +69,6 @@ bool Framework::InitSwapChain() {
 bool Framework::InitResources() {
 	CreateTargets(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
-	mAlphaBlendState.Create(D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_ZERO);
-	mPremultipliedBlendState.Create(
-	    D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA);
-
 	if (!mRendererManager.Init()) {
 		return false;
 	}
@@ -89,8 +85,6 @@ void Framework::Render() {
 	mContext->ClearDepthStencilView(mDepthStencil.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	mContext->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 
-	mPremultipliedBlendState.Bind();
-
 	mRendererManager.Render();
 }
 
@@ -104,7 +98,7 @@ void Framework::EndFrame() {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	mSwapChain->Present(1, 0);
+	mSwapChain->Present(0, 0);
 }
 
 bool Framework::CreateTargets(int width, int height) {

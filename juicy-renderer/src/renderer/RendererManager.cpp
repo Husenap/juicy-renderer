@@ -34,7 +34,28 @@ bool RendererManager::Init() {
 void RendererManager::Render() {
 	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
 
+	for (auto& renderCommand : mRenderCommands) {
+		std::visit(overloaded {
+			[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }
+		} , renderCommand);
+	}
+	mRenderCommands.clear();
+
 	mJuicyRenderer.Render();
+}
+
+void RendererManager::Submit(const RenderCommand& renderCommand) {
+	mRenderCommands.push_back(renderCommand);
+}
+
+void RendererManager::OnResize(int width, int height) {
+	mViewport = D3D11_VIEWPORT{
+	    .TopLeftX = 0,
+	    .TopLeftY = 0,
+	    .Width    = static_cast<float>(width),
+	    .Height   = static_cast<float>(height),
+	};
+	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
 }
 
 void RendererManager::SetupImGuiStyle() {
@@ -113,16 +134,6 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.TabBorderSize = 0.f;
 	style.TabRounding   = 3.f;
-}
-
-void RendererManager::OnResize(int width, int height) {
-	mViewport = D3D11_VIEWPORT{
-	    .TopLeftX = 0,
-	    .TopLeftY = 0,
-	    .Width    = static_cast<float>(width),
-	    .Height   = static_cast<float>(height),
-	};
-	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
 }
 
 }  // namespace JR

@@ -16,6 +16,7 @@ set(src_module
     "src/module/ModuleManager.h")
 
 set(src_renderer
+    "src/renderer/RenderCommand.h"
     "src/renderer/RendererManager.h"
     "src/renderer/RendererManager.cpp"
     "src/renderer/JuicyRenderer.h"
@@ -26,6 +27,8 @@ set(src_framework
     "src/framework/Buffer.cpp"
     "src/framework/Texture.h"
     "src/framework/Texture.cpp"
+    "src/framework/SamplerState.h"
+    "src/framework/SamplerState.cpp"
     "src/framework/BlendState.h"
     "src/framework/BlendState.cpp"
     "src/framework/ShaderReflection.h"
