@@ -140,8 +140,9 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 		}
 
 		auto& device = MM::Get<Framework>().Device();
-		if (FAILED(device->CreateVertexShader(
-		        vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, &mVertexShader))) {
+		HRESULT hr =device->CreateVertexShader( vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), NULL, &mVertexShader);
+		if (FAILED(hr)) {
+			hr = device->GetDeviceRemovedReason();
 			return;
 		}
 
@@ -180,8 +181,8 @@ bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::str
 		}
 
 		auto& device = MM::Get<Framework>().Device();
-		if (FAILED(
-		        device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader))) {
+		HRESULT hr = device->CreatePixelShader(psBlob->GetBufferPointer(), psBlob->GetBufferSize(), NULL, &mPixelShader);
+		if (FAILED(hr)) {
 			return;
 		}
 

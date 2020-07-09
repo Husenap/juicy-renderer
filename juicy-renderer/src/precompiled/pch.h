@@ -22,7 +22,13 @@ using Microsoft::WRL::ComPtr;
 
 #include <stb_image.h>
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 #include "module/Module.h"
 

@@ -18,6 +18,14 @@ void Buffer::Bind(uint32_t stride, uint32_t offset) {
 	MM::Get<Framework>().Context()->IASetVertexBuffers(0, 1, mBuffer.GetAddressOf(), &stride, &offset);
 }
 
+void Buffer::Bind(uint32_t slot) {
+	auto& context = MM::Get<Framework>().Context();
+
+	context->VSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
+	context->GSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
+	context->PSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
+}
+
 void Buffer::SetData(const void* data, uint32_t bytes) {
 	auto& context = MM::Get<Framework>().Context();
 

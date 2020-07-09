@@ -37,9 +37,9 @@ bool App::Run() {
 	while (!MM::Get<Window>().ShouldClose()) {
 		glfwPollEvents();
 
-		MM::Get<Framework>().Render();
-
 		MM::Get<FileWatcher>().FlushChanges();
+
+		MM::Get<Framework>().Render();
 
 		std::this_thread::yield();
 	}
