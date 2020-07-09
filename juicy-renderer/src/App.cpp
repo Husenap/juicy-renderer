@@ -11,10 +11,12 @@ namespace JR {
 App::App() {}
 
 bool App::Start() {
+	MM::AddModule<Logger>();
+	MM::AddModule<FileWatcher>();
 	MM::AddModule<Window>();
 	MM::AddModule<Framework>();
 
-	if (!MM::Get<Window>().Create("Juicy", 200, 200)) {
+	if (!MM::Get<Window>().Create("Juicy", 800, 800)) {
 		return false;
 	}
 
@@ -26,8 +28,7 @@ bool App::Start() {
 		return false;
 	}
 
-	MM::Unload<Framework>();
-	MM::Unload<Window>();
+	MM::UnloadAll();
 
 	return true;
 }
@@ -36,7 +37,11 @@ bool App::Run() {
 	while (!MM::Get<Window>().ShouldClose()) {
 		glfwPollEvents();
 
+		MM::Get<FileWatcher>().FlushChanges();
+
 		MM::Get<Framework>().Render();
+
+		std::this_thread::yield();
 	}
 
 	return true;

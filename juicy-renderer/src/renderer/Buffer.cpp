@@ -7,7 +7,7 @@ namespace JR {
 bool Buffer::Create(D3D11_BUFFER_DESC bufferDesc) {
 	HRESULT hr = MM::Get<Framework>().Device()->CreateBuffer(&bufferDesc, nullptr, &mBuffer);
 	if (FAILED(hr)) {
-		std::cerr << "Failed to Create Buffer" << std::endl;
+		LOG_ERROR("Failed to Create Buffer");
 		return false;
 	}
 
@@ -16,6 +16,14 @@ bool Buffer::Create(D3D11_BUFFER_DESC bufferDesc) {
 
 void Buffer::Bind(uint32_t stride, uint32_t offset) {
 	MM::Get<Framework>().Context()->IASetVertexBuffers(0, 1, mBuffer.GetAddressOf(), &stride, &offset);
+}
+
+void Buffer::Bind(uint32_t slot) {
+	auto& context = MM::Get<Framework>().Context();
+
+	context->VSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
+	context->GSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
+	context->PSSetConstantBuffers(slot, 1, mBuffer.GetAddressOf());
 }
 
 void Buffer::SetData(const void* data, uint32_t bytes) {

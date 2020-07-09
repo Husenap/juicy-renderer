@@ -5,7 +5,7 @@ namespace JR {
 bool ShaderReflection::Reflect(ComPtr<ID3DBlob> blob) {
 	HRESULT hr = D3DReflect(blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&mReflection));
 	if (FAILED(hr)) {
-		std::cerr << "Failed to get Shader Reflection Interface" << std::endl;
+		LOG_ERROR("Failed to get Shader Reflection Interface");
 		return false;
 	}
 

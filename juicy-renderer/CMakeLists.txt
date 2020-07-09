@@ -4,6 +4,9 @@ set(src_precompiled
     "src/precompiled/pch.h")
 
 set(src_util
+    "src/util/Logger.h"
+    "src/util/Logger.cpp"
+    "src/util/FileWatcher.h"
     "src/util/MessageEmitter.h"
     "src/util/TypeId.h"
     "src/util/TypeId.cpp")
@@ -43,7 +46,7 @@ source_group("src" FILES "src/main.cpp")
 
 target_precompile_headers(${target_name} PUBLIC ${src_precompiled})
 
-target_link_libraries(${target_name} d3d11 d3dcompiler CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::imgui CONAN_PKG::glm)
+target_link_libraries(${target_name} d3d11 d3dcompiler CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm imgui)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

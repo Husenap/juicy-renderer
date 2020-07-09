@@ -2,18 +2,7 @@
 
 namespace JR {
 
-class Token {
-public:
-	Token() {
-		static uint32_t uniqueId = 0;
-		id                       = ++uniqueId;
-	}
-
-private:
-	uint32_t id;
-
-	friend class MessageEmitter;
-};
+struct Token {};
 
 using MessageToken = std::shared_ptr<Token>;
 
@@ -25,10 +14,10 @@ class MessageEmitter {
 
 public:
 	template <typename MessageType>
-	std::shared_ptr<Token> Subscribe(std::function<void(MessageType)> callback) {
+	std::shared_ptr<Token> Subscribe(std::function<void(const MessageType&)> callback) {
 		uint32_t messageId = TypeId::Get<MessageType>();
 
-		auto fn = new std::function<void(MessageType)>{[=](MessageType message) { callback(message); }};
+		auto fn = new std::function<void(const MessageType&)>{[=](const MessageType& message) { callback(message); }};
 
 		std::shared_ptr<Token> token = std::make_shared<Token>();
 
@@ -51,7 +40,7 @@ public:
 		for (int i = 0; i < it->second.size(); ++i) {
 			auto& entry = it->second[i];
 
-			auto cb = reinterpret_cast<std::function<void(MessageType)>*>(entry.callback);
+			auto cb = reinterpret_cast<std::function<void(const MessageType&)>*>(entry.callback);
 
 			if (entry.token.expired()) {
 				delete cb;

@@ -42,6 +42,8 @@ public:
 		Get().Unload(TypeId::Get<T>());
 	}
 
+	static void UnloadAll() { Get().mModules.clear(); }
+
 private:
 	static ModuleManager& Get() {
 		static ModuleManager instance;
