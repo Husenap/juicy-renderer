@@ -48,7 +48,7 @@ set(src_files
     ${src_util}
     ${src_module}
     ${src_renderer}
-    ${src_framemwork}
+    ${src_framework}
     ${src_world})
 
 # Project

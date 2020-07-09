@@ -29,11 +29,12 @@ void Scene::Update(float time) {
 	mDeltaTime   = mCurrentTime - mLastTime;
 	mLastTime    = mCurrentTime;
 
+	/*
 	auto view = mECS.view<Transform>();
 	for (auto entity : view) {
 		auto& transform = view.get<Transform>(entity);
-		LOG_DEBUG("X coord[%d] = %f", entity, transform.position.x);
 	}
+	*/
 }
 
 }  // namespace JR

@@ -17,9 +17,14 @@ public:
 
 	int GetWidth() const { return mWidth; }
 	int GetHeight() const { return mHeight; }
+
+	glm::vec2 GetSize() const { return {mWidth, mHeight}; }
+
 	HWND GetHandle() const;
 
 private:
+	static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height);
+
 	std::string mTitle;
 	int mWidth;
 	int mHeight;

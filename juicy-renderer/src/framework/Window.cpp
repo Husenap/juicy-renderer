@@ -4,15 +4,6 @@ namespace JR {
 
 static WNDPROC currentWndProc;
 
-static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
-	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	if (!userWindow) {
-		return;
-	}
-
-	userWindow->Emit(EventResize{width, height});
-}
-
 static LRESULT CALLBACK MyWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 
@@ -38,7 +29,6 @@ bool Window::Create(const std::string& title, int width, int height) {
 
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 
-	
 	currentWndProc = (WNDPROC)GetWindowLongPtr(GetHandle(), -4);
 	SetWindowLongPtr(GetHandle(), -4, (LONG_PTR)MyWndProc);
 
@@ -55,6 +45,18 @@ void Window::SwapBuffers() const {
 
 HWND Window::GetHandle() const {
 	return glfwGetWin32Window(mWindow);
+}
+
+void Window::WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!userWindow) {
+		return;
+	}
+
+	userWindow->mWidth = width;
+	userWindow->mHeight = height;
+
+	userWindow->Emit(EventResize{width, height});
 }
 
 }  // namespace JR

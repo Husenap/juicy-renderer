@@ -1,7 +1,7 @@
 #include "App.h"
 
-#include "renderer/Framework.h"
-#include "renderer/Window.h"
+#include "framework/Framework.h"
+#include "framework/Window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -41,11 +41,12 @@ bool App::Run() {
 	while (!MM::Get<Window>().ShouldClose()) {
 		glfwPollEvents();
 
-		MM::Get<FileWatcher>().FlushChanges();
-
-		MM::Get<Framework>().Render();
-
+		MM::Get<Framework>().BeginFrame();
 		mScene.Update(static_cast<float>(glfwGetTime()));
+		MM::Get<Framework>().Render();
+		MM::Get<Framework>().EndFrame();
+
+		MM::Get<FileWatcher>().FlushChanges();
 
 		std::this_thread::yield();
 	}

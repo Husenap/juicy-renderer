@@ -28,6 +28,7 @@ public:
 		return token;
 	}
 
+protected:
 	template <typename MessageType>
 	void Emit(const MessageType& message) {
 		uint32_t messageId = TypeId::Get<MessageType>();
