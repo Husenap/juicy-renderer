@@ -31,6 +31,7 @@ public:
 	RendererManager& Renderer() { return mRendererManager; }
 
 private:
+	IDXGIAdapter* FindBestAdapter();
 	bool CreateTargets(int width, int height);
 	void ResizeBackbuffer(int width, int height);
 

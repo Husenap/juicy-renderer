@@ -26,6 +26,12 @@ bool Framework::Initialize() {
 }
 
 bool Framework::InitSwapChain() {
+	IDXGIAdapter* adapter = FindBestAdapter();
+	if (!adapter){
+		LOG_FATAL("Failed to find an adapter!");
+		return false;
+	}
+
 	auto scd = DXGI_SWAP_CHAIN_DESC{.BufferDesc   = DXGI_MODE_DESC{.Format = DXGI_FORMAT_R8G8B8A8_UNORM},
 	                                .SampleDesc   = DXGI_SAMPLE_DESC{.Count = 1},
 	                                .BufferUsage  = DXGI_USAGE_RENDER_TARGET_OUTPUT,
@@ -45,8 +51,8 @@ bool Framework::InitSwapChain() {
 	                                     D3D_FEATURE_LEVEL_9_3,
 	                                     D3D_FEATURE_LEVEL_9_1};
 
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL,
-	                                           D3D_DRIVER_TYPE_HARDWARE,
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(adapter,
+	                                           D3D_DRIVER_TYPE_UNKNOWN,
 	                                           NULL,
 	                                           creationFlags,
 	                                           featureLevels,
@@ -99,6 +105,49 @@ void Framework::EndFrame() {
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 	mSwapChain->Present(0, 0);
+}
+
+IDXGIAdapter* Framework::FindBestAdapter()
+{
+	ComPtr<IDXGIFactory> factory;
+
+	if (FAILED(CreateDXGIFactory(IID_PPV_ARGS(&factory)))) {
+		LOG_FATAL("Failed to create DXGI Factory");
+		return nullptr;
+	}
+
+	IDXGIAdapter* adapter;
+	std::vector<IDXGIAdapter*> adapters;
+	for (auto i = 0; factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i){
+		adapters.push_back(adapter);
+	}
+
+	if (adapters.empty()) {
+		LOG_FATAL("No adapters found");
+		return nullptr;
+	}
+
+	IDXGIAdapter* bestAdapter = nullptr;
+	for (auto i = 0; i < adapters.size(); ++i) {
+		DXGI_ADAPTER_DESC adapterDesc;
+		adapters[i]->GetDesc(&adapterDesc);
+
+		LOG_INFO(
+		    "Found adapter: %ls VRAM: %uMB", adapterDesc.Description, adapterDesc.DedicatedVideoMemory / (1 << 20));
+
+		if (bestAdapter) {
+			DXGI_ADAPTER_DESC bestAdapterDesc;
+			bestAdapter->GetDesc(&bestAdapterDesc);
+
+			if (bestAdapterDesc.DedicatedVideoMemory < adapterDesc.DedicatedVideoMemory) {
+				bestAdapter = adapters[i];
+			}
+		} else {
+			bestAdapter = adapters[i];
+		}
+	}
+
+	return bestAdapter;
 }
 
 bool Framework::CreateTargets(int width, int height) {
