@@ -19,7 +19,7 @@ jobs:
 
     - name: Generate
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=$BUILD_TYPE
       shell: bash
       
     - name: Build
@@ -36,8 +36,7 @@ jobs:
       run: |
         cmake -E make_directory ${{runner.workspace}}/artifact
         cmake -E copy ${{runner.workspace}}/build/bin/app.exe ${{runner.workspace}}/artifact
-        cmake -E copy $GITHUB_WORKSPACE/bin/assets ${{runner.workspace}}/artifact/assets
-      shell: bash
+        cmake -E copy_directory ${{github.workspace}}/bin/assets ${{runner.workspace}}/artifact/assets
     
     - name: Upload Artifact to Github
       uses: actions/upload-artifact@v2
