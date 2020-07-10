@@ -3,7 +3,7 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-debug:
     runs-on: windows-latest
 
     steps:
@@ -13,7 +13,7 @@ jobs:
       run: pip install conan
 
     - name: Generate
-      run: cmake . -B.build
+      run: cmake . -B.build -DCMAKE_BUILD_TYPE=Debug
       
     - name: Build
       run: cmake --build .build/
@@ -22,3 +22,26 @@ jobs:
       run: |
         cd .build/
         ctest .
+  
+  build-release:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Conan
+      run: pip install conan
+
+    - name: Generate
+      run: cmake . -B.build -DCMAKE_BUILD_TYPE=Debug
+      
+    - name: Build
+      run: cmake --build .build/
+
+    - name: Upload Artifact to Github
+      uses: actions/upload-artifact@v2
+      with:
+        name: Juicy Renderer Release
+        path: |
+          .build/app/Release/app.exe
+          bin/
