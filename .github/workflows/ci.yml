@@ -2,6 +2,7 @@ name: Build
 on: [push, pull_request]
 env:
   BUILD_TYPE: Release
+  BUILD_DIR: .build
 
 jobs:
   build:
@@ -14,16 +15,22 @@ jobs:
     - name: Install Conan
       run: pip install conan
 
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/$BUILD_DIR
+      shell: bash
+
     - name: Generate
-      run: cmake . -B.build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      working-directory: ${{runner.workspace}}/$BUILD_DIR
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
       shell: bash
       
     - name: Build
-      run: cmake --build .build/ --config $BUILD_TYPE
+      working-directory: ${{runner.workspace}}/$BUILD_DIR
+      run: cmake --build . --config $BUILD_TYPE
       shell: bash
 
     - name: Run Unit Tests
-      working-directory: ${{runner.workspace}}/.build/
+      working-directory: ${{runner.workspace}}/$BUILD_DIR
       run: ctest -C $BUILD_TYPE
       shell: bash
     
@@ -32,5 +39,5 @@ jobs:
       with:
         name: Juicy Renderer Release
         path: |
-          .build/app/Release/app.exe
-          bin/
+          ${{runner.workspace}}/$BUILD_DIR/app/Release/app.exe
+          ${GITHUB_WORKSPACE}/bin/**/*
