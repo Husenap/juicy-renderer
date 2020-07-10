@@ -37,5 +37,5 @@ jobs:
       with:
         name: Juicy Renderer Release
         path: |
-          ${{runner.workspace}}/build/app/Release/app.exe
-          $GITHUB_WORKSPACE/bin/**/*
+          ${{runner.workspace}}/build/bin/app.exe
+          bin/**/*
