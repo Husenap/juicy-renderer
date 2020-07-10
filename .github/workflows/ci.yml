@@ -31,11 +31,16 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: ctest -C $BUILD_TYPE
       shell: bash
+
+    - name: Prepare Artifact
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/artifact
+        cmake -E copy ${{runner.workspace}}/build/bin/app.exe ${{runner.workspace}}/artifact
+        cmake -E copy $GITHUB_WORKSPACE/bin/assets ${{runner.workspace}}/artifact/assets
+      shell: bash
     
     - name: Upload Artifact to Github
       uses: actions/upload-artifact@v2
       with:
         name: Juicy Renderer Release
-        path: |
-          ${{runner.workspace}}/build/bin/app.exe
-          bin/**/*
+        path: ${{runner.workspace}}/artifact
