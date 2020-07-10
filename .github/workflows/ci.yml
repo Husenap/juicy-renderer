@@ -1,7 +1,7 @@
 name: windows
 on: [push, pull_request]
 env:
-  BUILD_TYPE: Release
+  build_type: Release
 
 jobs:
   build:
@@ -19,18 +19,15 @@ jobs:
 
     - name: Generate
       working-directory: ${{runner.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      shell: bash
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=${{env.build_type}}
       
     - name: Build
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
-      shell: bash
+      run: cmake --build . --config ${{env.build_type}}
 
     - name: Run Unit Tests
       working-directory: ${{runner.workspace}}/build
-      run: ctest -C $BUILD_TYPE
-      shell: bash
+      run: ctest -C ${{env.build_type}}
 
     - name: Prepare Artifact
       run: |
