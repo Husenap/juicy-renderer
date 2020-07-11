@@ -13,6 +13,8 @@ App::App() {}
 bool App::Start() {
 	MM::AddModule<Logger>();
 	MM::AddModule<FileWatcher>();
+	MM::AddModule<TransactionManager>();
+
 	MM::AddModule<Window>();
 	MM::AddModule<Framework>();
 

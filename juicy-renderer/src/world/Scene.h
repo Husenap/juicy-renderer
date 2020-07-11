@@ -2,6 +2,8 @@
 
 #include <entt/entity/registry.hpp>
 
+#include "editor/DiffUtil.h"
+
 namespace JR {
 class Scene {
 public:
@@ -14,6 +16,7 @@ private:
 	void DrawDockSpace();
 	void DrawInspector();
 	void DrawHierarchy();
+	void DrawHistory();
 
 	template <typename... Components>
 	void DrawEntityComponents(entt::entity entity) {
@@ -21,8 +24,10 @@ private:
 	}
 	template <typename Component>
 	void DrawEntityComponent(entt::entity entity) {
+		DiffUtil::SetActiveEntity(entity);
 		if (mECS.has<Component>(entity)) {
 			auto& component = mECS.get<Component>(entity);
+
 			View(component);
 		}
 	}
@@ -33,5 +38,8 @@ private:
 	float mCurrentTime;
 	float mLastTime;
 	float mDeltaTime;
+
+	bool mShowGUI = true;
+	MessageToken mShowGUIToken;
 };
 }  // namespace JR

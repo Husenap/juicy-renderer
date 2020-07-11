@@ -27,7 +27,7 @@ bool Framework::Initialize() {
 
 bool Framework::InitSwapChain() {
 	IDXGIAdapter* adapter = FindBestAdapter();
-	if (!adapter){
+	if (!adapter) {
 		LOG_FATAL("Failed to find an adapter!");
 		return false;
 	}
@@ -104,7 +104,7 @@ void Framework::EndFrame() {
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	mSwapChain->Present(0, 0);
+	mSwapChain->Present(1, 0);
 }
 
 IDXGIAdapter* Framework::FindBestAdapter() {

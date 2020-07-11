@@ -1,9 +1,9 @@
 #include "Scene.h"
 
-#include "framework/Framework.h"
-#include "renderer/RenderCommand.h"
-
 #include "components/Components.h"
+#include "framework/Framework.h"
+#include "framework/Window.h"
+#include "renderer/RenderCommand.h"
 
 namespace JR {
 
@@ -12,25 +12,18 @@ using namespace Components;
 bool Scene::Init() {
 	mLastTime = mCurrentTime = mDeltaTime = 0.f;
 
-	auto e = mECS.create();
-	mECS.destroy(e);
-	e = mECS.create();
-	mECS.destroy(e);
-	e = mECS.create();
-	mECS.destroy(e);
-	e = mECS.create();
-	mECS.destroy(e);
-	e = mECS.create();
-	mECS.destroy(e);
-	e = mECS.create();
-	mECS.destroy(e);
-
 	for (auto i = 0; i < 10; ++i) {
 		auto entity = mECS.create();
 		mECS.emplace<Identification>(entity, "entity_" + std::to_string(i));
 		mECS.emplace<Transform>(entity, glm::vec3(i, 0.f, 10.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
 		mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
 	}
+
+	mShowGUIToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& message) {
+		if (message.key == GLFW_KEY_F11) {
+			mShowGUI = !mShowGUI;
+		}
+	});
 
 	return true;
 }
@@ -56,12 +49,17 @@ void Scene::Update(float time) {
 }
 
 void Scene::UpdateEditor() {
+	if (!mShowGUI) {
+		return;
+	}
+
 	DrawDockSpace();
 	DrawInspector();
 	DrawHierarchy();
+	DrawHistory();
 
 	static bool demo = true;
-	if(demo){
+	if (demo) {
 		ImGui::ShowDemoWindow(&demo);
 	}
 }
@@ -125,6 +123,18 @@ void Scene::DrawHierarchy() {
 		if (clickedEntity) {
 			mSelectedEntity = clickedEntity;
 		}
+	}
+	ImGui::End();
+}
+
+void Scene::DrawHistory() {
+	if (ImGui::Begin("History")) {
+		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth |
+		                                     ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
+		                                     ImGuiTreeNodeFlags_Bullet;
+
+		MM::Get<TransactionManager>().EnumerateUndoStack(
+		    [](const std::string& commitMessage) { ImGui::TreeNodeEx(commitMessage.c_str(), baseFlags); });
 	}
 	ImGui::End();
 }
