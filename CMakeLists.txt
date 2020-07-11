@@ -6,6 +6,7 @@ include("cmake/compiler_features.cmake")
 include("cmake/compiler_warnings.cmake")
 include("cmake/conan.cmake")
 include("cmake/imgui.cmake")
+include("cmake/imgui_file_dialog.cmake")
 
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

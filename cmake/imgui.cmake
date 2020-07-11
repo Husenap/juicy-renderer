@@ -1,4 +1,4 @@
-message("-- External Project: imgui")
+message("-- External Project: ImGui")
 include(FetchContent)
 
 FetchContent_Declare(
