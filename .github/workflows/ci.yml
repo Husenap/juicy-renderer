@@ -1,24 +1,42 @@
-name: Build
-
+name: windows
 on: [push, pull_request]
+env:
+  build_type: Release
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
     - name: Install Conan
       run: pip install conan
 
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
     - name: Generate
-      run: cmake . -B.build
+      working-directory: ${{runner.workspace}}/build
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=${{env.build_type}}
       
     - name: Build
-      run: cmake --build .build/
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config ${{env.build_type}}
 
-    - name: Test
+    - name: Run Unit Tests
+      working-directory: ${{runner.workspace}}/build
+      run: ctest -C ${{env.build_type}}
+
+    - name: Prepare Artifact
       run: |
-        cd .build/
-        ctest .
+        cmake -E make_directory ${{runner.workspace}}/artifact
+        cmake -E copy ${{runner.workspace}}/build/bin/app.exe ${{runner.workspace}}/artifact
+        cmake -E copy_directory ${{github.workspace}}/bin/assets ${{runner.workspace}}/artifact/assets
+    
+    - name: Upload Artifact to Github
+      uses: actions/upload-artifact@v2
+      with:
+        name: Juicy Renderer Release
+        path: ${{runner.workspace}}/artifact

@@ -4,12 +4,12 @@
 
 namespace JR {
 
-void BlendState::Create(D3D11_BLEND srcRGB,
+bool BlendState::Create(D3D11_BLEND srcRGB,
                         D3D11_BLEND destRGB,
                         D3D11_BLEND srcAlpha,
                         D3D11_BLEND destAlpha,
-                        D3D11_BLEND_OP opRGB,
-                        D3D11_BLEND_OP opAlpha) {
+                        D3D11_BLEND_OP opRGB /*= D3D11_BLEND_OP_ADD*/,
+                        D3D11_BLEND_OP opAlpha /*= D3D11_BLEND_OP_ADD*/) {
 	D3D11_BLEND_DESC blendDesc{
 	    .RenderTarget = {D3D11_RENDER_TARGET_BLEND_DESC{.BlendEnable           = TRUE,
 	                                                    .SrcBlend              = srcRGB,
@@ -20,7 +20,7 @@ void BlendState::Create(D3D11_BLEND srcRGB,
 	                                                    .BlendOpAlpha          = opAlpha,
 	                                                    .RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL}}};
 
-	MM::Get<Framework>().Device()->CreateBlendState(&blendDesc, &mBlendState);
+	return !FAILED(MM::Get<Framework>().Device()->CreateBlendState(&blendDesc, &mBlendState));
 }
 
 void BlendState::Bind() {

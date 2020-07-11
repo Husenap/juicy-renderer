@@ -26,4 +26,5 @@ struct PixelOutput {
 cbuffer BufferData : register(b0) {
     float4x4 ProjectionMatrix;
     float4 Resolution;
+    float Time;
 }
