@@ -12,14 +12,14 @@ struct Transform {
 
 void View(Transform& transform) {
 	if (ImGui::CollapsingHeader("Transform")) {
-		ImGui::DragFloat3("position", &transform.position.x, 0.05f);
-		DiffUtil::HandleTransaction(transform, "Changed position");
+		ImGui::DragFloat3("Position", &transform.position.x, 0.05f);
+		DiffUtil::HandleTransaction(transform, "Transform Position");
 
-		ImGui::DragFloat3("scale", &transform.scale.x, 0.05f);
-		DiffUtil::HandleTransaction(transform, "Changed scale");
+		ImGui::DragFloat3("Scale", &transform.scale.x, 0.05f);
+		DiffUtil::HandleTransaction(transform, "Transform Scale");
 
-		ImGui::DragFloat3("rotation", &transform.rotation.x, 0.05f);
-		DiffUtil::HandleTransaction(transform, "Changed rotation");
+		ImGui::DragFloat3("Rotation", &transform.rotation.x, 0.05f);
+		DiffUtil::HandleTransaction(transform, "Transform Rotation");
 	}
 }
 

@@ -19,11 +19,23 @@ bool Scene::Init() {
 		mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
 	}
 
-	mShowGUIToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& message) {
+	mShowGUIToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const EventKeyPress& message) {
 		if (message.key == GLFW_KEY_F11) {
 			mShowGUI = !mShowGUI;
 		}
 	});
+
+	mTransactionToken = MM::Get<TransactionManager>().Subscribe<EventTransaction>([&](const EventTransaction& message) {
+		auto it = mTransactionHandlers.find(message.componentId);
+		if (it == mTransactionHandlers.end()) {
+			LOG_ERROR("Failed to find transaction handler for component with id: %d!", message.componentId);
+			return;
+		}
+
+		it->second(message);
+	});
+
+	RegisterTransactionHandlers<Identification, Transform, Sprite>();
 
 	return true;
 }
@@ -109,7 +121,7 @@ void Scene::DrawHierarchy() {
 				nodeFlags |= ImGuiTreeNodeFlags_Selected;
 			}
 
-			bool nodeOpen = ImGui::TreeNodeEx((void*)entity, nodeFlags, "%s", identification.name.c_str());
+			bool nodeOpen = ImGui::TreeNodeEx((void*)entity, nodeFlags, "%s", identification.name);
 
 			if (ImGui::IsItemClicked()) {
 				clickedEntity = entity;
@@ -133,8 +145,17 @@ void Scene::DrawHistory() {
 		                                     ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
 		                                     ImGuiTreeNodeFlags_Bullet;
 
-		MM::Get<TransactionManager>().EnumerateUndoStack(
-		    [](const std::string& commitMessage) { ImGui::TreeNodeEx(commitMessage.c_str(), baseFlags); });
+		MM::Get<TransactionManager>().EnumerateUndoStack([](const std::string& commitMessage, bool isActive) {
+			ImGuiTreeNodeFlags nodeFlags = baseFlags;
+			if (isActive) {
+				nodeFlags |= ImGuiTreeNodeFlags_Selected;
+			}
+			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
+		});
+		MM::Get<TransactionManager>().EnumerateRedoStack([](const std::string& commitMessage) {
+			ImGuiTreeNodeFlags nodeFlags = baseFlags;
+			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
+		});
 	}
 	ImGui::End();
 }

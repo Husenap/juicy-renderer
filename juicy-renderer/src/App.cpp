@@ -13,10 +13,10 @@ App::App() {}
 bool App::Start() {
 	MM::AddModule<Logger>();
 	MM::AddModule<FileWatcher>();
-	MM::AddModule<TransactionManager>();
 
 	MM::AddModule<Window>();
 	MM::AddModule<Framework>();
+	MM::AddModule<TransactionManager>();
 
 	if (!MM::Get<Window>().Create("Juicy", 1600, 900)) {
 		return false;

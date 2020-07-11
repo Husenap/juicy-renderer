@@ -28,6 +28,7 @@ private:
 		}
 		if (mHasActiveTransaction) {
 			LOG_FATAL("Trying to change entity while a transaction is active!");
+			return;
 		}
 		mEntity = entity;
 	}
@@ -69,7 +70,7 @@ private:
 		updatedData.resize(sizeof(data));
 		std::memcpy(updatedData.data(), &data, sizeof(data));
 
-		MM::Get<TransactionManager>().RecordTransaction(*mEntity, mSnapshot, updatedData, commitMessage);
+		MM::Get<TransactionManager>().RecordTransaction(*mEntity, mSnapshot, updatedData, commitMessage, TypeId::Get<T>());
 	}
 
 	std::vector<uint8_t> mSnapshot;
