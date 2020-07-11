@@ -54,7 +54,9 @@ void JuicyRenderer::Render() {
 	while (remaining > 0) {
 		std::size_t batchSize = std::min(remaining, mSprites.max_size());
 
-		std::memcpy(&mSprites[0], &mSpriteRenderCommands[mSpriteRenderCommands.size() - remaining], batchSize * sizeof(mSprites[0]));
+		std::memcpy(&mSprites[0],
+		            &mSpriteRenderCommands[mSpriteRenderCommands.size() - remaining],
+		            batchSize * sizeof(mSprites[0]));
 
 		RenderBatch(batchSize);
 
@@ -66,14 +68,14 @@ void JuicyRenderer::Render() {
 	mTextureBack.Unbind(0);
 	mShader.Unbind();
 	mSamplerState.Unbind(0);
-	DoGUI();
 }
 
 void JuicyRenderer::RenderBatch(std::size_t batchSize) {
 	auto& context = MM::Get<Framework>().Context();
 
-	std::sort(
-	    mSprites.begin(), mSprites.begin() + batchSize, [](auto a, auto b) { return a.position.z > b.position.z; });
+	std::sort(std::execution::par, mSprites.begin(), mSprites.begin() + batchSize, [](auto a, auto b) {
+		return a.position.z > b.position.z;
+	});
 	mSpriteBuffer.SetData(mSprites.data(), batchSize * sizeof(mSprites[0]));
 
 	mSpriteBuffer.Bind(sizeof(mSprites[0]), 0);
@@ -85,26 +87,6 @@ void JuicyRenderer::RenderBatch(std::size_t batchSize) {
 
 void JuicyRenderer::Submit(RCSprite renderCommand) {
 	mSpriteRenderCommands.push_back(renderCommand);
-}
-
-void JuicyRenderer::DoGUI() {
-	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
-	                                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-	                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-	                                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize(viewport->Size);
-	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	ImGui::Begin("DOCK_SPACE", nullptr, dockSpaceWindowFlags);
-
-	ImGui::SetNextWindowBgAlpha(0.f);
-	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
-	ImGui::End();
-	ImGui::PopStyleVar(2);
 }
 
 void JuicyRenderer::UpdateConstantBuffer() {

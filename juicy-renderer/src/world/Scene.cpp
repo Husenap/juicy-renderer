@@ -3,26 +3,32 @@
 #include "framework/Framework.h"
 #include "renderer/RenderCommand.h"
 
+#include "components/Components.h"
+
 namespace JR {
 
-struct Transform {
-	glm::vec3 position;
-	glm::vec3 scale;
-	glm::vec3 rotation;
-};
-
-struct Sprite {
-	glm::vec4 uv;
-	glm::vec4 tint;
-	float blendMode;
-};
+using namespace Components;
 
 bool Scene::Init() {
 	mLastTime = mCurrentTime = mDeltaTime = 0.f;
 
-	for (auto i = 0; i < 512; ++i) {
+	auto e = mECS.create();
+	mECS.destroy(e);
+	e = mECS.create();
+	mECS.destroy(e);
+	e = mECS.create();
+	mECS.destroy(e);
+	e = mECS.create();
+	mECS.destroy(e);
+	e = mECS.create();
+	mECS.destroy(e);
+	e = mECS.create();
+	mECS.destroy(e);
+
+	for (auto i = 0; i < 10; ++i) {
 		auto entity = mECS.create();
-		mECS.emplace<Transform>(entity, glm::vec3(i*0.00000001f+0.01f, 0.f, 0.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
+		mECS.emplace<Identification>(entity, "entity_" + std::to_string(i));
+		mECS.emplace<Transform>(entity, glm::vec3(i, 0.f, 10.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
 		mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
 	}
 
@@ -33,19 +39,6 @@ void Scene::Update(float time) {
 	mCurrentTime = time;
 	mDeltaTime   = mCurrentTime - mLastTime;
 	mLastTime    = mCurrentTime;
-
-	static constexpr float sigma = 10.f;
-	static constexpr float rho   = 28.f;
-	static constexpr float beta  = 8 / 3.f;
-
-	auto transformView = mECS.view<Transform>();
-	std::for_each(std::execution::par, transformView.begin(), transformView.end(), [&](auto entity) {
-		auto& transform = transformView.get<Transform>(entity);
-
-		auto& p = transform.position;
-		p += std::min(mDeltaTime, 1.f/60.f) * glm::vec3(sigma * (p.y - p.x), p.x * (rho - p.z) - p.y, p.x * p.y - beta * p.z);
-	});
-
 
 	auto& renderer  = MM::Get<Framework>().Renderer();
 	auto spriteView = mECS.view<Transform, Sprite>();
@@ -59,18 +52,78 @@ void Scene::Update(float time) {
 		                         .blendMode = sprite.blendMode});
 	}
 
-	if (ImGui::Begin("VERTICES")) {
-		for (auto entity : spriteView) {
-			auto& transform = spriteView.get<Transform>(entity);
-			auto& sprite    = spriteView.get<Sprite>(entity);
+	UpdateEditor();
+}
 
-			ImGui::PushID(ImGui::GetID(&sprite));
-			ImGui::DragFloat3("position", &transform.position.x, 0.05f);
-			ImGui::DragFloat4("uv", &sprite.uv.x, 0.05f);
-			ImGui::ColorEdit4("tint", &sprite.tint.x);
-			ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.3f - Alpha Blend");
-			ImGui::Separator();
-			ImGui::PopID();
+void Scene::UpdateEditor() {
+	DrawDockSpace();
+	DrawInspector();
+	DrawHierarchy();
+
+	static bool demo = true;
+	if(demo){
+		ImGui::ShowDemoWindow(&demo);
+	}
+}
+
+void Scene::DrawDockSpace() {
+	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
+	                                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+	                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+	                                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::Begin("DOCK_SPACE", nullptr, dockSpaceWindowFlags);
+
+	ImGui::SetNextWindowBgAlpha(0.f);
+	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
+	ImGui::End();
+	ImGui::PopStyleVar(2);
+}
+
+void Scene::DrawInspector() {
+	if (ImGui::Begin("Inspector")) {
+		if (mSelectedEntity) {
+			DrawEntityComponents<Identification, Transform, Sprite>(*mSelectedEntity);
+		}
+	}
+	ImGui::End();
+}
+
+void Scene::DrawHierarchy() {
+	if (ImGui::Begin("Hierarchy")) {
+		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+		                                     ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
+
+		auto view = mECS.view<Identification>();
+
+		std::optional<entt::entity> clickedEntity;
+		for (auto entity : view) {
+			auto& identification = view.get<Identification>(entity);
+
+			ImGuiTreeNodeFlags nodeFlags = baseFlags;
+			if (mSelectedEntity && mSelectedEntity == entity) {
+				nodeFlags |= ImGuiTreeNodeFlags_Selected;
+			}
+
+			bool nodeOpen = ImGui::TreeNodeEx((void*)entity, nodeFlags, "%s", identification.name.c_str());
+
+			if (ImGui::IsItemClicked()) {
+				clickedEntity = entity;
+			}
+
+			if (nodeOpen) {
+				ImGui::TreePop();
+			}
+		}
+
+		if (clickedEntity) {
+			mSelectedEntity = clickedEntity;
 		}
 	}
 	ImGui::End();

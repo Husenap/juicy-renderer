@@ -16,7 +16,7 @@ bool App::Start() {
 	MM::AddModule<Window>();
 	MM::AddModule<Framework>();
 
-	if (!MM::Get<Window>().Create("Juicy", 800, 800)) {
+	if (!MM::Get<Window>().Create("Juicy", 1600, 900)) {
 		return false;
 	}
 

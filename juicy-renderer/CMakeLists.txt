@@ -15,6 +15,18 @@ set(src_module
     "src/module/Module.h"
     "src/module/ModuleManager.h")
 
+set(src_editor
+    "src/editor/DiffUtil.h"
+    "src/editor/TransactionManager.h"
+    "src/editor/TransactionManager.cpp"
+)
+
+set(src_components
+    "src/components/Identification.h"
+    "src/components/Transform.h"
+    "src/components/Sprite.h"
+    "src/components/Components.h")
+
 set(src_renderer
     "src/renderer/RenderCommand.h"
     "src/renderer/RendererManager.h"
@@ -50,6 +62,8 @@ set(src_files
     ${src_precompiled}
     ${src_util}
     ${src_module}
+    ${src_editor}
+    ${src_components}
     ${src_renderer}
     ${src_framework}
     ${src_world})

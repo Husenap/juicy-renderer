@@ -30,18 +30,10 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
 
     const float2 duv = uv[3] - uv[0];
 
-    float a = Time.x;
-    float c = cos(a);
-    float s = sin(a);
-    float2x2 rotationMatrix = float2x2(c,s,-s,c);
-
     PixelInput vertex;
     for(int i = 0; i < 4; ++i){
         vertex.position = input[0].position;
-        vertex.position.z -= 30.0f;
-        vertex.position.xz = mul(rotationMatrix, vertex.position.xz);
         vertex.position.xy += offset[i].xy * duv;
-        vertex.position.z += 50.0f;
         vertex.position = mul(ProjectionMatrix, vertex.position);
 
         vertex.uv = uv[i];

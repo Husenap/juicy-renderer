@@ -11,6 +11,7 @@
 #include <thread>
 #include <variant>
 #include <vector>
+#include <optional>
 
 // Variant helpers
 template <class... Ts>
@@ -52,6 +53,7 @@ using Microsoft::WRL::ComPtr;
 
 #include <examples/imgui_impl_dx11.h>
 #include <examples/imgui_impl_win32.h>
+#include <misc/cpp/imgui_stdlib.h>
 #include <imgui.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

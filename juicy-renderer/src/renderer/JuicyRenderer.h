@@ -14,13 +14,11 @@ public:
 	bool Init();
 	void Render();
 
-	void RenderBatch(std::size_t batchSize);
-
 	void Submit(RCSprite renderCommand);
 
 private:
+	void RenderBatch(std::size_t batchSize);
 	void UpdateConstantBuffer();
-	void DoGUI();
 
 	Shader mShader;
 	std::array<RCSprite, 2048> mSprites;

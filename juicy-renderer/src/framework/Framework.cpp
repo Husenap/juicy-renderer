@@ -107,8 +107,7 @@ void Framework::EndFrame() {
 	mSwapChain->Present(0, 0);
 }
 
-IDXGIAdapter* Framework::FindBestAdapter()
-{
+IDXGIAdapter* Framework::FindBestAdapter() {
 	ComPtr<IDXGIFactory> factory;
 
 	if (FAILED(CreateDXGIFactory(IID_PPV_ARGS(&factory)))) {
@@ -118,7 +117,7 @@ IDXGIAdapter* Framework::FindBestAdapter()
 
 	IDXGIAdapter* adapter;
 	std::vector<IDXGIAdapter*> adapters;
-	for (auto i = 0; factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i){
+	for (auto i = 0; factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i) {
 		adapters.push_back(adapter);
 	}
 
