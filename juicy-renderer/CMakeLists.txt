@@ -8,6 +8,8 @@ set(src_util
     "src/util/Logger.cpp"
     "src/util/FileWatcher.h"
     "src/util/MessageEmitter.h"
+    "src/util/StringId.h"
+    "src/util/StringId.cpp"
     "src/util/TypeId.h"
     "src/util/TypeId.cpp")
 
@@ -16,6 +18,12 @@ set(src_module
     "src/module/ModuleManager.h")
 
 set(src_editor
+    "src/editor/Editor.h"
+    "src/editor/Editor.cpp"
+    "src/editor/ContentManager.h"
+    "src/editor/ContentManager.cpp"
+    "src/editor/ProjectManager.h"
+    "src/editor/ProjectManager.cpp"
     "src/editor/DiffUtil.h"
     "src/editor/TransactionManager.h"
     "src/editor/TransactionManager.cpp"
@@ -35,10 +43,12 @@ set(src_renderer
     "src/renderer/JuicyRenderer.cpp")
 
 set(src_framework
-    "src/framework/Buffer.h"
-    "src/framework/Buffer.cpp"
+    "src/framework/TextureManager.h"
+    "src/framework/TextureManager.cpp"
     "src/framework/Texture.h"
     "src/framework/Texture.cpp"
+    "src/framework/Buffer.h"
+    "src/framework/Buffer.cpp"
     "src/framework/SamplerState.h"
     "src/framework/SamplerState.cpp"
     "src/framework/BlendState.h"
@@ -75,7 +85,7 @@ source_group("src" FILES "src/main.cpp")
 
 target_precompile_headers(${target_name} PUBLIC ${src_precompiled})
 
-target_link_libraries(${target_name} d3d11 d3dcompiler dxgi CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui)
+target_link_libraries(${target_name} juicy-fd d3d11 d3dcompiler dxgi CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

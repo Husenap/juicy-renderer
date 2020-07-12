@@ -14,5 +14,6 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "predefined")
 include(GoogleTest)
 enable_testing()
 
+add_subdirectory("juicy-fd")
 add_subdirectory("juicy-renderer")
 add_subdirectory("app")

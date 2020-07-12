@@ -12,7 +12,7 @@ public:
 	bool Run();
 
 private:
-	Scene mScene;
+	std::unique_ptr<Scene> mScene;
 };
 
 }  // namespace JR

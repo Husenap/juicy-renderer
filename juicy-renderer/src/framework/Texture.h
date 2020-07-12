@@ -19,6 +19,8 @@ public:
 	void Bind(uint32_t slot) const;
 	void Unbind(uint32_t slot) const;
 
+	bool IsValid() const { return mTexture && mShaderResourceView; }
+
 private:
 	ComPtr<ID3D11Texture2D> mTexture;
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;

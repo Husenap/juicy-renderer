@@ -30,10 +30,28 @@ bool Window::Create(const std::string& title, int width, int height) {
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 	glfwSetKeyCallback(mWindow, WindowKeyCallback);
 
+	glfwSetDropCallback(mWindow, WindowDropCallback);
+
+	SetWindowIcon();
+
 	currentWndProc = (WNDPROC)GetWindowLongPtr(GetHandle(), -4);
 	SetWindowLongPtr(GetHandle(), -4, (LONG_PTR)MyWndProc);
 
 	return true;
+}
+
+void Window::SetWindowIcon() {
+	GLFWimage icon;
+	int channels;
+	icon.pixels = stbi_load("assets/textures/icon.png", &icon.width, &icon.height, &channels, 4);
+
+	if (!icon.pixels) {
+		LOG_ERROR("Failed to find icon file for window!");
+		return;
+	}
+
+	glfwSetWindowIcon(mWindow, 1, &icon);
+	stbi_image_free(icon.pixels);
 }
 
 bool Window::ShouldClose() const {
@@ -72,6 +90,17 @@ void Window::WindowKeyCallback(GLFWwindow* window, int key, int scancode, int ac
 		userWindow->Emit(EventKeyPress{key, scancode, mods});
 	} else if (action == GLFW_RELEASE) {
 		userWindow->Emit(EventKeyRelease{key, scancode, mods});
+	}
+}
+
+void Window::WindowDropCallback(GLFWwindow* window, int count, const char** paths) {
+	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!userWindow) {
+		return;
+	}
+
+	for (int i = 0; i < count; ++i) {
+		userWindow->Emit(EventDroppedFile{.filepath = paths[i]});
 	}
 }
 

@@ -1,10 +1,12 @@
 #pragma once
 
+// STL Includes
 #include <array>
 #include <cmath>
 #include <cstdint>
 #include <execution>
 #include <filesystem>
+#include <fstream>
 #include <functional>
 #include <map>
 #include <optional>
@@ -22,6 +24,7 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
+// Windows Includes
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <dxgi.h>
@@ -29,6 +32,7 @@ overloaded(Ts...) -> overloaded<Ts...>;
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
 
+// Thirdparty Includes
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -43,6 +47,13 @@ using Microsoft::WRL::ComPtr;
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <examples/imgui_impl_dx11.h>
+#include <examples/imgui_impl_win32.h>
+#include <imgui.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+// Juicy Renderer Includes
 #include "module/Module.h"
 
 #include "util/Logger.h"
@@ -50,11 +61,5 @@ using Microsoft::WRL::ComPtr;
 #include "module/ModuleManager.h"
 #include "util/FileWatcher.h"
 #include "util/MessageEmitter.h"
+#include "util/StringId.h"
 #include "util/TypeId.h"
-
-#include <examples/imgui_impl_dx11.h>
-#include <examples/imgui_impl_win32.h>
-#include <imgui.h>
-#include <misc/cpp/imgui_stdlib.h>
-
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

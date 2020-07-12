@@ -1,18 +1,12 @@
 #include "JuicyRenderer.h"
 
 #include "framework/Framework.h"
+#include "framework/TextureManager.h"
 #include "framework/Window.h"
 
 namespace JR {
 bool JuicyRenderer::Init() {
 	if (!mShader.Load(Shader::Vertex | Shader::Geometry | Shader::Pixel, "assets/shaders/basic.hlsl")) {
-		return false;
-	}
-
-	if (!mTextureColor.CreateFromFile("assets/textures/groundprops.png")) {
-		return false;
-	}
-	if (!mTextureBack.CreateFromFile("assets/textures/groundprops_back.png")) {
 		return false;
 	}
 
@@ -32,7 +26,7 @@ bool JuicyRenderer::Init() {
 		return false;
 	}
 
-	if (!mSamplerState.Create(SamplerState::Filter::Point, SamplerState::Address::Wrap)) {
+	if (!mSamplerState.Create(SamplerState::Filter::Linear, SamplerState::Address::Wrap)) {
 		return false;
 	}
 
@@ -42,47 +36,39 @@ void JuicyRenderer::Render() {
 	mPremultipliedBlendState.Bind();
 	mSamplerState.Bind(0);
 	mShader.Bind();
-	mTextureColor.Bind(0);
-	mTextureBack.Bind(1);
 
 	UpdateConstantBuffer();
 	mConstantBuffer.Bind(0);
 
-	sizeof(RCSprite);
+	std::sort(std::execution::par, mSpriteRenderCommands.begin(), mSpriteRenderCommands.end(), [](auto a, auto b) {
+		return a.position.z > b.position.z;
+	});
 
-	std::size_t remaining = mSpriteRenderCommands.size();
-	while (remaining > 0) {
-		std::size_t batchSize = std::min(remaining, mSprites.max_size());
-
-		std::memcpy(&mSprites[0],
-		            &mSpriteRenderCommands[mSpriteRenderCommands.size() - remaining],
-		            batchSize * sizeof(mSprites[0]));
-
-		RenderBatch(batchSize);
-
-		remaining -= batchSize;
+	for (auto& sprite : mSpriteRenderCommands) {
+		RenderSprite(sprite);
 	}
+
 	mSpriteRenderCommands.clear();
 
-	mTextureColor.Unbind(0);
-	mTextureBack.Unbind(0);
 	mShader.Unbind();
 	mSamplerState.Unbind(0);
 }
 
-void JuicyRenderer::RenderBatch(std::size_t batchSize) {
+void JuicyRenderer::RenderSprite(const RCSprite& sprite) {
 	auto& context = MM::Get<Framework>().Context();
 
-	std::sort(std::execution::par, mSprites.begin(), mSprites.begin() + batchSize, [](auto a, auto b) {
-		return a.position.z > b.position.z;
-	});
-	mSpriteBuffer.SetData(mSprites.data(), batchSize * sizeof(mSprites[0]));
+	auto& texture = MM::Get<TextureManager>().GetTexture(sprite.texture);
+	auto& backTexture = MM::Get<TextureManager>().GetTexture(sprite.backTexture);
+	texture.Bind(0);
+	backTexture.Bind(1);
 
-	mSpriteBuffer.Bind(sizeof(mSprites[0]), 0);
+	mSpriteBuffer.SetData(&sprite, sizeof(sprite));
+
+	mSpriteBuffer.Bind(sizeof(sprite), 0);
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(batchSize, 0);
+	context->Draw(1, 0);
 }
 
 void JuicyRenderer::Submit(RCSprite renderCommand) {

@@ -6,9 +6,11 @@ struct Sprite {
 	glm::vec4 uv;
 	glm::vec4 tint;
 	float blendMode;
+	StringId texture;
+	StringId backTexture;
 };
 
-void View(Sprite& sprite) {
+static void View(Sprite& sprite) {
 	if (ImGui::CollapsingHeader("Sprite")) {
 		ImGui::DragFloat4("UV", &sprite.uv.x, 0.05f);
 		DiffUtil::HandleTransaction(sprite, "Sprite UV");
