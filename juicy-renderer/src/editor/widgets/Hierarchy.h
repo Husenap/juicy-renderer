@@ -17,4 +17,4 @@ private:
 	ECS& mECS;
 };
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets

@@ -15,4 +15,4 @@ protected:
 private:
 };
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets

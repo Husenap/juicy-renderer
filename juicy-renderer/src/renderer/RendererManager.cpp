@@ -19,12 +19,14 @@ bool RendererManager::Init() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui::GetIO().IniFilename = "assets/layout.ini";
 	ImGui_ImplDX11_Init(MM::Get<Framework>().Device().Get(), MM::Get<Framework>().Context().Get());
 	ImGui_ImplWin32_Init(MM::Get<Window>().GetHandle());
 
 	SetupImGuiStyle();
 
-	mResizeToken = MM::Get<Window>().Subscribe<EventResize>([&](const auto& message) { OnResize(message.width, message.height); });
+	mResizeToken =
+	    MM::Get<Window>().Subscribe<EventResize>([&](const auto& message) { OnResize(message.width, message.height); });
 
 	OnResize(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
@@ -35,9 +37,7 @@ void RendererManager::Render() {
 	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
 
 	for (auto& renderCommand : mRenderCommands) {
-		std::visit(overloaded {
-			[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }
-		} , renderCommand);
+		std::visit(overloaded{[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }}, renderCommand);
 	}
 	mRenderCommands.clear();
 

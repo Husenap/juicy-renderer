@@ -28,4 +28,4 @@ private:
 	bool mVisibility = true;
 };
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets

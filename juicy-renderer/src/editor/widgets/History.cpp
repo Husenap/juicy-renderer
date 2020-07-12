@@ -22,4 +22,4 @@ void History::Draw() {
 	});
 }
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets

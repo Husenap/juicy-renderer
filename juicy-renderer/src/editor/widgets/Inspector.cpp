@@ -14,4 +14,4 @@ void Inspector::Draw() {
 	}
 }
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets

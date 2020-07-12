@@ -36,4 +36,4 @@ private:
 	std::vector<std::function<void(entt::entity)>> mComponentDrawers;
 };
 
-}  // namespace JR::Views
+}  // namespace JR::Widgets
