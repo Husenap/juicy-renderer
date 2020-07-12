@@ -1,7 +1,5 @@
 #pragma once
 
-#include <entt/entity/registry.hpp>
-
 #include "editor/Editor.h"
 
 namespace JR {
@@ -11,7 +9,7 @@ public:
 	void Update(float time);
 
 private:
-	entt::registry mECS;
+	ECS mECS;
 
 	float mCurrentTime = 0.f;
 	float mLastTime    = 0.f;

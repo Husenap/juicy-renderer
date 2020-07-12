@@ -1,30 +1,28 @@
 #pragma once
 
-#include <entt/entity/registry.hpp>
-
 #include "editor/DiffUtil.h"
 #include "editor/ProjectManager.h"
+#include "widgets/ContentBrowser.h"
+#include "widgets/Hierarchy.h"
+#include "widgets/History.h"
+#include "widgets/Inspector.h"
 
 namespace JR {
 
 class Editor {
 public:
-	Editor(entt::registry& ecs);
+	Editor(ECS& ecs);
 
 	template <typename... Components>
 	void Init() {
 		(RegisterTransactionHandler<Components>(), ...);
-		(RegisterComponentDrawer<Components>(), ...);
+		mInspector.Init<Components...>();
 	}
 
 	void Update();
 
 private:
 	void DrawDockSpace();
-	void DrawInspector();
-	void DrawHierarchy();
-	void DrawHistory();
-	void DrawContentBrowser();
 
 	template <typename Component>
 	void RegisterTransactionHandler() {
@@ -45,22 +43,9 @@ private:
 		};
 	}
 
-	template <typename Component>
-	void RegisterComponentDrawer() {
-		mComponentDrawers.push_back([&](entt::entity entity) {
-			DiffUtil::SetActiveEntity(entity);
-			if (mECS.has<Component>(entity)) {
-				auto& component = mECS.get<Component>(entity);
-
-				View(component);
-			}
-		});
-	}
+	ECS& mECS;
 
 	ProjectManager mProjectManager;
-
-	entt::registry& mECS;
-	std::optional<entt::entity> mSelectedEntity;
 
 	bool mShowEditor = true;
 
@@ -68,7 +53,11 @@ private:
 	MessageToken mTransactionToken;
 
 	std::map<std::uint32_t, std::function<void(const EventTransaction&)>> mTransactionHandlers;
-	std::vector<std::function<void(entt::entity)>> mComponentDrawers;
+
+	Widgets::ContentBrowser mContentBrowser;
+	Widgets::Hierarchy mHierarchy;
+	Widgets::History mHistory;
+	Widgets::Inspector mInspector;
 };
 
 }  // namespace JR

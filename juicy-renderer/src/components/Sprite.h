@@ -1,5 +1,7 @@
 #pragma once
 
+#include "editor/DiffUtil.h"
+
 namespace JR::Components {
 
 struct Sprite {

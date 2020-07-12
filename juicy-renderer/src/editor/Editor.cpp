@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#include "EditorUtil.h"
 #include "components/Components.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
@@ -8,14 +9,30 @@ namespace JR {
 
 using namespace Components;
 
-Editor::Editor(entt::registry& ecs)
-    : mECS(ecs) {
+Editor::Editor(ECS& ecs)
+    : mECS(ecs)
+    , mInspector(ecs)
+    , mHierarchy(ecs) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
 		}
-		if (e.key == GLFW_KEY_F11) {
+		switch (e.key) {
+		case GLFW_KEY_F1:
+			mInspector.ToggleVisibility();
+			break;
+		case GLFW_KEY_F2:
+			mHierarchy.ToggleVisibility();
+			break;
+		case GLFW_KEY_F3:
+			mContentBrowser.ToggleVisibility();
+			break;
+		case GLFW_KEY_F4:
+			mHistory.ToggleVisibility();
+			break;
+		case GLFW_KEY_F11:
 			mShowEditor = !mShowEditor;
+			break;
 		}
 	});
 
@@ -41,10 +58,10 @@ void Editor::Update() {
 	}
 
 	DrawDockSpace();
-	DrawInspector();
-	DrawHierarchy();
-	DrawHistory();
-	DrawContentBrowser();
+	mInspector.Update();
+	mHistory.Update();
+	mHierarchy.Update();
+	mContentBrowser.Update();
 
 	static bool demo = true;
 	if (demo) {
@@ -70,78 +87,6 @@ void Editor::DrawDockSpace() {
 	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
 	ImGui::PopStyleVar(2);
-}
-
-void Editor::DrawInspector() {
-	if (ImGui::Begin("Inspector")) {
-		if (mSelectedEntity) {
-			for (auto& drawer : mComponentDrawers) {
-				drawer(*mSelectedEntity);
-			}
-		}
-	}
-	ImGui::End();
-}
-
-void Editor::DrawHierarchy() {
-	if (ImGui::Begin("Hierarchy")) {
-		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-		                                     ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
-
-		auto view = mECS.view<Identification>();
-
-		std::optional<entt::entity> clickedEntity;
-		for (auto entity : view) {
-			auto& identification = view.get<Identification>(entity);
-
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			if (mSelectedEntity && mSelectedEntity == entity) {
-				nodeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-
-			bool nodeOpen = ImGui::TreeNodeEx((void*)entity, nodeFlags, "%s", identification.name);
-
-			if (ImGui::IsItemClicked()) {
-				clickedEntity = entity;
-			}
-
-			if (nodeOpen) {
-				ImGui::TreePop();
-			}
-		}
-
-		if (clickedEntity) {
-			mSelectedEntity = clickedEntity;
-		}
-	}
-	ImGui::End();
-}
-
-void Editor::DrawHistory() {
-	if (ImGui::Begin("History")) {
-		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth |
-		                                     ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
-		                                     ImGuiTreeNodeFlags_Bullet;
-
-		MM::Get<TransactionManager>().EnumerateUndoStack([](const std::string& commitMessage, bool isActive) {
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			if (isActive) {
-				nodeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
-		});
-		MM::Get<TransactionManager>().EnumerateRedoStack([](const std::string& commitMessage) {
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
-		});
-	}
-	ImGui::End();
-}
-
-void Editor::DrawContentBrowser() {
-	if (ImGui::Begin("Content Browser")) {
-	}
-	ImGui::End();
 }
 
 }  // namespace JR
