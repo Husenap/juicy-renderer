@@ -23,6 +23,8 @@ public:
 
 private:
 	void DrawDockSpace();
+	void DrawMenuBar();
+	void HandleKeyPress(const EventKeyPress& e);
 
 	template <typename Component>
 	void RegisterTransactionHandler() {

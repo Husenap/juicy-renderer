@@ -17,23 +17,7 @@ Editor::Editor(ECS& ecs)
 		if (!mProjectManager.IsLoaded()) {
 			return;
 		}
-		switch (e.key) {
-		case GLFW_KEY_F1:
-			mInspector.ToggleVisibility();
-			break;
-		case GLFW_KEY_F2:
-			mHierarchy.ToggleVisibility();
-			break;
-		case GLFW_KEY_F3:
-			mContentBrowser.ToggleVisibility();
-			break;
-		case GLFW_KEY_F4:
-			mHistory.ToggleVisibility();
-			break;
-		case GLFW_KEY_F11:
-			mShowEditor = !mShowEditor;
-			break;
-		}
+		HandleKeyPress(e);
 	});
 
 	mTransactionToken = MM::Get<TransactionManager>().Subscribe<EventTransaction>([&](const EventTransaction& message) {
@@ -58,6 +42,8 @@ void Editor::Update() {
 	}
 
 	DrawDockSpace();
+	DrawMenuBar();
+
 	mInspector.Update();
 	mHistory.Update();
 	mHierarchy.Update();
@@ -70,10 +56,10 @@ void Editor::Update() {
 }
 
 void Editor::DrawDockSpace() {
-	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
-	                                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-	                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-	                                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	ImGuiWindowFlags dockSpaceWindowFlags =
+	    ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
+	    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+	    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->Pos);
@@ -87,6 +73,59 @@ void Editor::DrawDockSpace() {
 	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
 	ImGui::PopStyleVar(2);
+}
+
+void Editor::DrawMenuBar() {
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Save Project", "Ctrl + S")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_S, .mods = GLFW_MOD_CONTROL});
+			}
+			if (ImGui::MenuItem("jj Project", "Ctrl + S")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_S, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("View")) {
+			if (ImGui::MenuItem("Inspector", "F1")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F1});
+			}
+			if (ImGui::MenuItem("Hierarchy", "F2")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F2});
+			}
+			if (ImGui::MenuItem("Content Browser", "F3")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F3});
+			}
+			if (ImGui::MenuItem("History", "F4")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F4});
+			}
+			if (ImGui::MenuItem("Fullscreen", "F11")) {
+				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F11});
+			}
+			ImGui::EndMenu();
+		}
+	}
+	ImGui::EndMainMenuBar();
+}
+
+void Editor::HandleKeyPress(const EventKeyPress& e) {
+	switch (e.key) {
+	case GLFW_KEY_F1:
+		mInspector.ToggleVisibility();
+		break;
+	case GLFW_KEY_F2:
+		mHierarchy.ToggleVisibility();
+		break;
+	case GLFW_KEY_F3:
+		mContentBrowser.ToggleVisibility();
+		break;
+	case GLFW_KEY_F4:
+		mHistory.ToggleVisibility();
+		break;
+	case GLFW_KEY_F11:
+		mShowEditor = !mShowEditor;
+		break;
+	}
 }
 
 }  // namespace JR

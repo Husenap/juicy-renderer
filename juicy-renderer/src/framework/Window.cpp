@@ -29,8 +29,8 @@ bool Window::Create(const std::string& title, int width, int height) {
 
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 	glfwSetKeyCallback(mWindow, WindowKeyCallback);
-
 	glfwSetDropCallback(mWindow, WindowDropCallback);
+	glfwSetWindowContentScaleCallback(mWindow, WindowContentScaleCallback);
 
 	SetWindowIcon();
 
@@ -102,6 +102,15 @@ void Window::WindowDropCallback(GLFWwindow* window, int count, const char** path
 	for (int i = 0; i < count; ++i) {
 		userWindow->Emit(EventDroppedFile{.filepath = paths[i]});
 	}
+}
+
+void Window::WindowContentScaleCallback(GLFWwindow* window, float scaleX, float scaleY) {
+	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!userWindow) {
+		return;
+	}
+
+	userWindow->Emit(EventContentScale{glm::vec2(scaleX, scaleY)});
 }
 
 }  // namespace JR

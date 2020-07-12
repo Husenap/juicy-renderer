@@ -25,8 +25,8 @@ bool RendererManager::Init() {
 
 	SetupImGuiStyle();
 
-	mResizeToken =
-	    MM::Get<Window>().Subscribe<EventResize>([&](const auto& message) { OnResize(message.width, message.height); });
+	mResizeToken       = MM::Get<Window>().Subscribe<EventResize>([&](const auto& e) { OnResize(e.width, e.height); });
+	mContentScaleToken = MM::Get<Window>().Subscribe<EventContentScale>([&](const auto& e) { OnContentScale(e.scale); });
 
 	OnResize(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
@@ -59,6 +59,13 @@ void RendererManager::OnResize(int width, int height) {
 }
 
 void RendererManager::SetupImGuiStyle() {
+	for (float f = 1.0f; f <= 4.f; ++f) {
+		FontData fontData;
+		fontData.mScale = f;
+		fontData.mFont  = ImGui::GetIO().Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Regular.ttf", 16.0f * f);
+		mFonts.push_back(fontData);
+	}
+
 	ImGuiStyle& style                      = ImGui::GetStyle();
 	ImVec4* colors                         = style.Colors;
 	colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -114,8 +121,8 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.PopupRounding = 3.f;
 
-	style.WindowPadding    = ImVec2(4.f, 4.f);
-	style.FramePadding     = ImVec2(6.f, 4.f);
+	style.WindowPadding    = ImVec2(0.f, 0.f);
+	style.FramePadding     = ImVec2(4.f, 4.f);
 	style.ItemSpacing      = ImVec2(3.f, 3.f);
 	style.ItemInnerSpacing = ImVec2(3.f, 3.f);
 
@@ -134,6 +141,35 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.TabBorderSize = 0.f;
 	style.TabRounding   = 3.f;
+
+	mContentScale = MM::Get<Window>().GetContentScale();
+	UpdateScales();
+}
+
+void RendererManager::OnContentScale(glm::vec2 size) {
+	ImGui::GetStyle().ScaleAllSizes(1.f / mContentScale.x);
+
+	mContentScale = size;
+
+	UpdateScales();
+}
+
+void RendererManager::UpdateScales() {
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(mContentScale.x);
+
+	auto& io = ImGui::GetIO();
+
+	io.FontDefault     = nullptr;
+	io.FontGlobalScale = 1.f;
+
+	for (const auto& font : mFonts) {
+		io.FontDefault     = font.mFont;
+		io.FontGlobalScale = mContentScale.x / font.mScale;
+		if (font.mScale >= mContentScale.x) {
+			break;
+		}
+	}
 }
 
 }  // namespace JR
