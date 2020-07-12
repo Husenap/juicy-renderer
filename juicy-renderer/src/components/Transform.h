@@ -10,7 +10,7 @@ struct Transform {
 	glm::vec3 rotation;
 };
 
-void View(Transform& transform) {
+static void View(Transform& transform) {
 	if (ImGui::CollapsingHeader("Transform")) {
 		ImGui::DragFloat3("Position", &transform.position.x, 0.05f);
 		DiffUtil::HandleTransaction(transform, "Transform Position");

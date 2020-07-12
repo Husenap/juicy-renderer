@@ -26,9 +26,7 @@ bool App::Start() {
 		return false;
 	}
 
-	if (!mScene.Init()) {
-		return false;
-	}
+	mScene = std::make_unique<Scene>();
 
 	if (!Run()) {
 		return false;
@@ -44,7 +42,7 @@ bool App::Run() {
 		glfwPollEvents();
 
 		MM::Get<Framework>().BeginFrame();
-		mScene.Update(static_cast<float>(glfwGetTime()));
+		mScene->Update(static_cast<float>(glfwGetTime()));
 		MM::Get<Framework>().Render();
 		MM::Get<Framework>().EndFrame();
 

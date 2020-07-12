@@ -10,7 +10,7 @@ struct Identification {
 	char name[64];
 };
 
-void View(Identification& identification) {
+static void View(Identification& identification) {
 	ImGui::InputText("Name", identification.name, MAX_LENGTH, ImGuiInputTextFlags_AutoSelectAll);
 	DiffUtil::HandleTransaction(identification, "Identification Name");
 }

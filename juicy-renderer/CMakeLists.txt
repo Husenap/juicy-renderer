@@ -16,6 +16,12 @@ set(src_module
     "src/module/ModuleManager.h")
 
 set(src_editor
+    "src/editor/Editor.h"
+    "src/editor/Editor.cpp"
+    "src/editor/ContentManager.h"
+    "src/editor/ContentManager.cpp"
+    "src/editor/ProjectManager.h"
+    "src/editor/ProjectManager.cpp"
     "src/editor/DiffUtil.h"
     "src/editor/TransactionManager.h"
     "src/editor/TransactionManager.cpp"
@@ -75,7 +81,7 @@ source_group("src" FILES "src/main.cpp")
 
 target_precompile_headers(${target_name} PUBLIC ${src_precompiled})
 
-target_link_libraries(${target_name} d3d11 d3dcompiler dxgi CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui imgui_file_dialog)
+target_link_libraries(${target_name} juicy-fd d3d11 d3dcompiler dxgi CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
