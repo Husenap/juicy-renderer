@@ -29,12 +29,29 @@ bool Window::Create(const std::string& title, int width, int height) {
 
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 	glfwSetKeyCallback(mWindow, WindowKeyCallback);
+
 	glfwSetDropCallback(mWindow, WindowDropCallback);
+
+	SetWindowIcon();
 
 	currentWndProc = (WNDPROC)GetWindowLongPtr(GetHandle(), -4);
 	SetWindowLongPtr(GetHandle(), -4, (LONG_PTR)MyWndProc);
 
 	return true;
+}
+
+void Window::SetWindowIcon() {
+	GLFWimage icon;
+	int channels;
+	icon.pixels = stbi_load("assets/textures/icon.png", &icon.width, &icon.height, &channels, 4);
+
+	if (!icon.pixels) {
+		LOG_ERROR("Failed to find icon file for window!");
+		return;
+	}
+
+	glfwSetWindowIcon(mWindow, 1, &icon);
+	stbi_image_free(icon.pixels);
 }
 
 bool Window::ShouldClose() const {

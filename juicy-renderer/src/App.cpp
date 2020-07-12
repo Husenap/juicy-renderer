@@ -1,7 +1,9 @@
 #include "App.h"
 
+#include "editor/ContentManager.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
+#include "framework/TextureManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -17,6 +19,8 @@ bool App::Start() {
 	MM::AddModule<Window>();
 	MM::AddModule<Framework>();
 	MM::AddModule<TransactionManager>();
+	MM::AddModule<ContentManager>();
+	MM::AddModule<TextureManager>();
 
 	if (!MM::Get<Window>().Create("Juicy", 1600, 900)) {
 		return false;

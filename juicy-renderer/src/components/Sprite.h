@@ -6,6 +6,8 @@ struct Sprite {
 	glm::vec4 uv;
 	glm::vec4 tint;
 	float blendMode;
+	StringId texture;
+	StringId backTexture;
 };
 
 static void View(Sprite& sprite) {

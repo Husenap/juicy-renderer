@@ -17,7 +17,7 @@ public:
 	void Submit(RCSprite renderCommand);
 
 private:
-	void RenderBatch(std::size_t batchSize);
+	void RenderSprite(const RCSprite& sprite);
 	void UpdateConstantBuffer();
 
 	Shader mShader;
@@ -30,9 +30,6 @@ private:
 		glm::vec4 Time;
 	} mConstantBufferData;
 	Buffer mConstantBuffer;
-
-	Texture mTextureColor;
-	Texture mTextureBack;
 
 	BlendState mPremultipliedBlendState;
 	SamplerState mSamplerState;

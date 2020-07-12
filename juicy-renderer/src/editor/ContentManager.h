@@ -2,24 +2,20 @@
 
 namespace JR {
 
-class ContentManager {
+class ContentManager : public Module {
 public:
-	ContentManager();
 	void CreateNewContent(std::filesystem::path projectPath);
 	void Load(std::filesystem::path projectPath);
 
 	void ImportFile();
-
-private:
 	void ImportFile(std::filesystem::path importFile);
 
-	bool mIsLoaded = false;
+	std::optional<std::filesystem::path> GetPath(StringId id);
 
+private:
 	std::filesystem::path mContentPath;
 
-	std::unordered_map<std::size_t, std::string> mFileMap;
-
-	MessageToken mDroppedFileToken;
+	std::map<StringId, std::filesystem::path> mFileMap;
 };
 
 }  // namespace JR

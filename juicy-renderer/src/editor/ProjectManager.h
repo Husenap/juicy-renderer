@@ -1,7 +1,5 @@
 #pragma once
 
-#include "editor/ContentManager.h"
-
 namespace JR {
 
 class ProjectManager {
@@ -20,9 +18,8 @@ private:
 
 	bool mIsLoaded = false;
 
-	ContentManager mContentManager;
-
 	MessageToken mKeyPressToken;
+	MessageToken mDroppedFileToken;
 
 	std::filesystem::path mProjectPath;
 	std::filesystem::path mProjectFilePath;

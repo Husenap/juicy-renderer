@@ -2,6 +2,7 @@ name: windows
 on: [push, pull_request]
 env:
   build_type: Release
+  arch: x64
 
 jobs:
   build:
@@ -19,7 +20,7 @@ jobs:
 
     - name: Generate
       working-directory: ${{runner.workspace}}/build
-      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=${{env.build_type}}
+      run: cmake ${{github.workspace}} -A ${{env.arch}} -DCMAKE_BUILD_TYPE=${{env.build_type}}
       
     - name: Build
       working-directory: ${{runner.workspace}}/build

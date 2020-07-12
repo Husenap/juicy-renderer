@@ -34,6 +34,8 @@ class Window : public Module, public MessageEmitter {
 public:
 	bool Create(const std::string& title, int width, int height);
 
+	void SetWindowIcon();
+
 	bool ShouldClose() const;
 
 	void SwapBuffers() const;

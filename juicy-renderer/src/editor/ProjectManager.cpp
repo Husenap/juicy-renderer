@@ -2,28 +2,35 @@
 
 #include <juicy-fd/FileDialog.h>
 
+#include "editor/ContentManager.h"
 #include "framework/Window.h"
 
 namespace JR {
 
 ProjectManager::ProjectManager() {
-	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
+	mKeyPressToken    = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
+        if (!mIsLoaded) {
+            return;
+        }
+        if (e.mods == GLFW_MOD_CONTROL) {
+            switch (e.key) {
+            case GLFW_KEY_O:
+                LoadProject();
+                break;
+            case GLFW_KEY_S:
+                SaveProject();
+                break;
+            case GLFW_KEY_I:
+                MM::Get<ContentManager>().ImportFile();
+                break;
+            }
+        }
+    });
+	mDroppedFileToken = MM::Get<Window>().Subscribe<EventDroppedFile>([&](const auto& e) {
 		if (!mIsLoaded) {
 			return;
 		}
-		if (e.mods == GLFW_MOD_CONTROL) {
-			switch (e.key) {
-			case GLFW_KEY_O:
-				LoadProject();
-				break;
-			case GLFW_KEY_S:
-				SaveProject();
-				break;
-			case GLFW_KEY_I:
-				mContentManager.ImportFile();
-				break;
-			}
-		}
+		MM::Get<ContentManager>().ImportFile(e.filepath);
 	});
 }
 
@@ -64,7 +71,7 @@ void ProjectManager::CreateNewProject() {
 		projectFile.open(projectFilePath, std::ios_base::binary);
 	}
 
-	mContentManager.CreateNewContent(projectPath);
+	MM::Get<ContentManager>().CreateNewContent(projectPath);
 
 	LoadProject(projectFilePath);
 }
@@ -87,7 +94,7 @@ void ProjectManager::LoadProject(std::filesystem::path projectFilePath) {
 	mProjectPath = mProjectFilePath;
 	mProjectPath.remove_filename();
 
-	mContentManager.Load(mProjectPath);
+	MM::Get<ContentManager>().Load(mProjectPath);
 
 	mIsLoaded = true;
 }

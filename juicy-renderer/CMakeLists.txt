@@ -8,6 +8,8 @@ set(src_util
     "src/util/Logger.cpp"
     "src/util/FileWatcher.h"
     "src/util/MessageEmitter.h"
+    "src/util/StringId.h"
+    "src/util/StringId.cpp"
     "src/util/TypeId.h"
     "src/util/TypeId.cpp")
 
@@ -41,10 +43,12 @@ set(src_renderer
     "src/renderer/JuicyRenderer.cpp")
 
 set(src_framework
-    "src/framework/Buffer.h"
-    "src/framework/Buffer.cpp"
+    "src/framework/TextureManager.h"
+    "src/framework/TextureManager.cpp"
     "src/framework/Texture.h"
     "src/framework/Texture.cpp"
+    "src/framework/Buffer.h"
+    "src/framework/Buffer.cpp"
     "src/framework/SamplerState.h"
     "src/framework/SamplerState.cpp"
     "src/framework/BlendState.h"

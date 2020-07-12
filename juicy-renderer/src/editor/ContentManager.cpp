@@ -10,10 +10,6 @@ constexpr char* NAME_CONTENT_DIRECTORY = "Content";
 
 static const std::vector<std::wstring> ACCEPTED_FILES{L"png"};
 
-ContentManager::ContentManager() {
-	mDroppedFileToken = MM::Get<Window>().Subscribe<EventDroppedFile>([&](const auto& e) { ImportFile(e.filepath); });
-}
-
 void ContentManager::CreateNewContent(std::filesystem::path projectPath) {
 	std::filesystem::create_directory(projectPath / NAME_CONTENT_DIRECTORY);
 }
@@ -27,10 +23,8 @@ void ContentManager::Load(std::filesystem::path projectPath) {
 			continue;
 		}
 
-		mFileMap[std::filesystem::hash_value(path.lexically_relative(mContentPath))] = path.generic_string();
+		mFileMap[StringId::FromPath(path.lexically_relative(mContentPath))] = path;
 	}
-
-	mIsLoaded = true;
 }
 
 void ContentManager::ImportFile() {
@@ -43,9 +37,6 @@ void ContentManager::ImportFile() {
 }
 
 void ContentManager::ImportFile(std::filesystem::path importFile) {
-	if (!mIsLoaded) {
-		return;
-	}
 	if (!importFile.has_extension()) {
 		return;
 	}
@@ -60,7 +51,17 @@ void ContentManager::ImportFile(std::filesystem::path importFile) {
 
 	std::filesystem::copy_file(importFile, mContentPath / filename, std::filesystem::copy_options::overwrite_existing);
 
-	mFileMap[std::filesystem::hash_value(filename)] = (mContentPath / filename).generic_string();
+	mFileMap[StringId::FromPath(filename)] = (mContentPath / filename);
+}
+
+std::optional<std::filesystem::path> ContentManager::GetPath(StringId id) {
+	auto it = mFileMap.find(id);
+
+	if (it == mFileMap.end()) {
+		return std::nullopt;
+	}
+
+	return it->second;
 }
 
 }  // namespace JR

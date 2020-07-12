@@ -4,7 +4,7 @@ set(src_files
     "src/main.cpp")
 
 # Project
-add_executable(${target_name} ${src_files})
+add_executable(${target_name} ${src_files} "resources/resources.rc")
 
 source_group("src" FILES "src/main.cpp")
 
