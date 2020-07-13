@@ -2,6 +2,7 @@
 
 #include "editor/ContentManager.h"
 #include "editor/DiffUtil.h"
+#include "framework/TextureManager.h"
 
 namespace JR::Components {
 
@@ -21,6 +22,12 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 		texturePath = contentManager.GetRelativePath(*path).generic_string();
 	}
 
+	auto& texture = MM::Get<TextureManager>().GetTexture(textureId);
+
+	ImGui::BeginGroup();
+
+	ImGui::Image(texture, {100.f, 100.f});
+
 	ImGui::PushID(&textureId);
 	if (ImGui::InputText(label, &texturePath, ImGuiInputTextFlags_AutoSelectAll)) {
 		auto newId = StringId::FromPath(texturePath);
@@ -29,6 +36,10 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 		}
 	}
 	DiffUtil::HandleTransaction(sprite, label);
+	ImGui::PopID();
+
+	ImGui::EndGroup();
+
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TEXTURE_ID")) {
 			assert(payload->DataSize == sizeof(StringId));
@@ -42,7 +53,6 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 		}
 		ImGui::EndDragDropTarget();
 	}
-	ImGui::PopID();
 }
 
 static void View(Sprite& sprite) {
@@ -50,13 +60,21 @@ static void View(Sprite& sprite) {
 		ImGui::DragFloat4("UV", &sprite.uv.x, 0.05f);
 		DiffUtil::HandleTransaction(sprite, "Sprite UV");
 
+		ImGui::Separator();
+
 		ImGui::ColorEdit4("Tint", &sprite.tint.x);
 		DiffUtil::HandleTransaction(sprite, "Sprite Tint");
+
+		ImGui::Separator();
 
 		ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.3f - Alpha Blend");
 		DiffUtil::HandleTransaction(sprite, "Sprite Blend Mode");
 
+		ImGui::Separator();
+
 		SetTextureId(sprite, sprite.texture, "Texture");
+
+		ImGui::Separator();
 
 		SetTextureId(sprite, sprite.backTexture, "Back Texture");
 	}

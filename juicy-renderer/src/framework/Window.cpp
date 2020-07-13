@@ -66,6 +66,16 @@ HWND Window::GetHandle() const {
 	return glfwGetWin32Window(mWindow);
 }
 
+void Window::SimulateKeyEvent(const EventKey& e) {
+	Emit(e);
+
+	if (e.action == GLFW_PRESS) {
+		Emit(EventKeyPress{e.key, e.scancode, e.mods});
+	} else if (e.action == GLFW_RELEASE) {
+		Emit(EventKeyRelease{e.key, e.scancode, e.mods});
+	}
+}
+
 void Window::WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
 	if (!userWindow) {

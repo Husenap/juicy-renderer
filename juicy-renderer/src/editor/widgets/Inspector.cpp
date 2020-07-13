@@ -8,9 +8,11 @@ void Inspector::Draw() {
 	auto selectedEntity = EditorUtil::GetSelectedEntity();
 
 	if (selectedEntity) {
+		ImGui::PushItemWidth(-170.f);
 		for (auto& drawer : mComponentDrawers) {
 			drawer(*selectedEntity);
 		}
+		ImGui::PopItemWidth();
 	}
 }
 

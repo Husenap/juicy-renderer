@@ -105,6 +105,7 @@ void ContentBrowser::DrawContent() {
 		}
 		if (ImGui::BeginDragDropSource()) {
 			ImGui::SetDragDropPayload("TEXTURE_ID", &textureId, sizeof(textureId));
+			ImGui::Image(texture, {50.f, 50.f});
 			ImGui::EndDragDropSource();
 		}
 

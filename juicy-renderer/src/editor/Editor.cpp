@@ -82,30 +82,41 @@ void Editor::DrawDockSpace() {
 
 void Editor::DrawMenuBar() {
 	if (ImGui::BeginMainMenuBar()) {
+		auto& window = MM::Get<Window>();
+
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Save Project", "Ctrl + S")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_S, .mods = GLFW_MOD_CONTROL});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_S, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
-			if (ImGui::MenuItem("jj Project", "Ctrl + S")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_S, .mods = GLFW_MOD_CONTROL});
+			if (ImGui::MenuItem("Open Project", "Ctrl + O")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_O, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("View")) {
+		if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::MenuItem("Undo", "Ctrl + Z")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Z, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			if (ImGui::MenuItem("Redo", "Ctrl + Y")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Y, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Window")) {
 			if (ImGui::MenuItem("Inspector", "F1")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F1});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F1, .action = GLFW_PRESS});
 			}
 			if (ImGui::MenuItem("Hierarchy", "F2")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F2});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F2, .action = GLFW_PRESS});
 			}
 			if (ImGui::MenuItem("Content Browser", "F3")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F3});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F3, .action = GLFW_PRESS});
 			}
 			if (ImGui::MenuItem("History", "F4")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F4});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F4, .action = GLFW_PRESS});
 			}
 			if (ImGui::MenuItem("Fullscreen", "F11")) {
-				HandleKeyPress(EventKeyPress{.key = GLFW_KEY_F11});
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F11, .action = GLFW_PRESS});
 			}
 			ImGui::EndMenu();
 		}

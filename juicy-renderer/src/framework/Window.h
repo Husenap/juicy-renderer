@@ -57,6 +57,8 @@ public:
 
 	HWND GetHandle() const;
 
+	void SimulateKeyEvent(const EventKey& e);
+
 private:
 	static void WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height);
 	static void WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
