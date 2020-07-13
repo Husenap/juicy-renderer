@@ -14,6 +14,10 @@ const JR::Texture& TextureManager::GetTexture(StringId id) {
 			return mDefaultTexture;
 		}
 
+		if (path->extension() != ".png") {
+			return mDefaultTexture;
+		}
+
 		Texture newTexture;
 		if (!newTexture.CreateFromFile(path->string())) {
 			LOG_ERROR("Failed to load texture from file: %s", path->string().c_str());

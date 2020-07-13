@@ -13,6 +13,16 @@ public:
 		Get().HandleTransactionInternal<T>(data, commitMessage);
 	}
 
+	template <typename T>
+	static void Snapshot(const T& data) {
+		Get().SnapshotInternal<T>(data);
+	}
+
+	template <typename T>
+	static void CommitChanges(const T& data, const char* commitMessage) {
+		Get().CommitChangesInternal<T>(data, commitMessage);
+	}
+
 private:
 	DiffUtil()
 	    : mHasActiveTransaction(false) {}
@@ -39,38 +49,40 @@ private:
 			return;
 		}
 		if (ImGui::IsItemActivated()) {
-			if (mHasActiveTransaction) {
-				LOG_FATAL("Trying to create a new snapshot in the middle of another transaction!");
-				return;
-			}
-			mHasActiveTransaction = true;
-			Snapshot(data);
+			SnapshotInternal(data);
 		}
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			if (!mHasActiveTransaction) {
-				LOG_FATAL("Trying to commit a change without any active transaction!");
-				return;
-			}
-			CommitChanges(data, commitMessage);
-			mHasActiveTransaction = false;
+			CommitChangesInternal(data, commitMessage);
 		} else if (ImGui::IsItemDeactivated()) {
 			mHasActiveTransaction = false;
 		}
 	}
 
 	template <typename T>
-	void Snapshot(const T& data) {
+	void SnapshotInternal(const T& data) {
+		if (mHasActiveTransaction) {
+			LOG_FATAL("Trying to create a new snapshot in the middle of another transaction!");
+			return;
+		}
+		mHasActiveTransaction = true;
 		mSnapshot.resize(sizeof(data));
 		std::memcpy(mSnapshot.data(), &data, sizeof(data));
 	}
 
 	template <typename T>
-	void CommitChanges(const T& data, const char* commitMessage) {
+	void CommitChangesInternal(const T& data, const char* commitMessage) {
+		if (!mHasActiveTransaction) {
+			LOG_FATAL("Trying to commit a change without any active transaction!");
+			return;
+		}
 		std::vector<uint8_t> updatedData;
 		updatedData.resize(sizeof(data));
 		std::memcpy(updatedData.data(), &data, sizeof(data));
 
-		MM::Get<TransactionManager>().RecordTransaction(*mEntity, mSnapshot, updatedData, commitMessage, TypeId::Get<T>());
+		MM::Get<TransactionManager>().RecordTransaction(
+		    *mEntity, mSnapshot, updatedData, commitMessage, TypeId::Get<T>());
+
+		mHasActiveTransaction = false;
 	}
 
 	std::vector<uint8_t> mSnapshot;

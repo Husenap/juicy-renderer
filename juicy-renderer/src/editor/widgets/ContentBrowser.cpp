@@ -97,10 +97,15 @@ void ContentBrowser::DrawContent() {
 	}
 
 	for (auto i = 0; i < files.size(); ++i) {
-		auto& texture = MM::Get<TextureManager>().GetTexture(StringId::FromPath(files[i]));
+		auto textureId = StringId::FromPath(files[i]);
+		auto& texture  = MM::Get<TextureManager>().GetTexture(textureId);
 
 		if (ImGui::ImageButton(texture, {mZoom, mZoom})) {
 			LOG_DEBUG("PRESSED BUTTON!");
+		}
+		if (ImGui::BeginDragDropSource()) {
+			ImGui::SetDragDropPayload("TEXTURE_ID", &textureId, sizeof(textureId));
+			ImGui::EndDragDropSource();
 		}
 
 		float lastButtonX = ImGui::GetItemRectMax().x;
