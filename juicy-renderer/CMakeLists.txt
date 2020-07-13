@@ -18,6 +18,8 @@ set(src_module
     "src/module/ModuleManager.h")
 
 set(src_editor_widgets
+    "src/editor/widgets/Viewport.h"
+    "src/editor/widgets/Viewport.cpp"
     "src/editor/widgets/Inspector.h"
     "src/editor/widgets/Inspector.cpp"
     "src/editor/widgets/Hierarchy.h"
@@ -49,8 +51,8 @@ set(src_components
 
 set(src_renderer
     "src/renderer/RenderCommand.h"
-    "src/renderer/RendererManager.h"
-    "src/renderer/RendererManager.cpp"
+    "src/renderer/RenderManager.h"
+    "src/renderer/RenderManager.cpp"
     "src/renderer/JuicyRenderer.h"
     "src/renderer/JuicyRenderer.cpp")
 

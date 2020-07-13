@@ -35,16 +35,17 @@ Editor::Editor(ECS& ecs)
 }
 
 void Editor::Update() {
-	if (!mProjectManager.IsLoaded()) {
-		mProjectManager.SelectProject();
-		return;
-	}
-
 	if (!mShowEditor) {
 		return;
 	}
 
 	DrawDockSpace();
+
+	if (!mProjectManager.IsLoaded()) {
+		mProjectManager.SelectProject();
+		return;
+	}
+
 	DrawMenuBar();
 
 	static bool demo = true;
@@ -56,15 +57,16 @@ void Editor::Update() {
 	mHistory.Update();
 	mHierarchy.Update();
 	mContentBrowser.Update();
+	mViewport.Update();
 
 	DiffUtil::FlushChanges();
 }
 
 void Editor::DrawDockSpace() {
-	ImGuiWindowFlags dockSpaceWindowFlags =
-	    ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
-	    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-	    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
+	                                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+	                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+	                                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->Pos);
@@ -72,12 +74,12 @@ void Editor::DrawDockSpace() {
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 	ImGui::Begin("DOCK_SPACE", nullptr, dockSpaceWindowFlags);
 
-	ImGui::SetNextWindowBgAlpha(0.f);
 	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
-	ImGui::PopStyleVar(2);
+	ImGui::PopStyleVar(3);
 }
 
 void Editor::DrawMenuBar() {
@@ -100,6 +102,10 @@ void Editor::DrawMenuBar() {
 			if (ImGui::MenuItem("Redo", "Ctrl + Y")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Y, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Delete Entity", "Del")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_DELETE, .action = GLFW_PRESS});
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Window")) {
@@ -114,6 +120,9 @@ void Editor::DrawMenuBar() {
 			}
 			if (ImGui::MenuItem("History", "F4")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F4, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("History", "F5")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F5, .action = GLFW_PRESS});
 			}
 			if (ImGui::MenuItem("Fullscreen", "F11")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F11, .action = GLFW_PRESS});
@@ -137,6 +146,9 @@ void Editor::HandleKeyPress(const EventKeyPress& e) {
 		break;
 	case GLFW_KEY_F4:
 		mHistory.ToggleVisibility();
+		break;
+	case GLFW_KEY_F5:
+		mViewport.ToggleVisibility();
 		break;
 	case GLFW_KEY_F11:
 		mShowEditor = !mShowEditor;

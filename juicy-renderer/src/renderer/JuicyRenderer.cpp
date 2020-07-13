@@ -56,8 +56,8 @@ void JuicyRenderer::RenderSprite(const RCSprite& sprite) {
 
 	auto& texture     = MM::Get<TextureManager>().GetTexture(sprite.texture);
 	auto& backTexture = MM::Get<TextureManager>().GetTexture(sprite.backTexture);
-	texture.Bind(0);
-	backTexture.Bind(1);
+	texture.BindSRV(0);
+	backTexture.BindSRV(1);
 
 	mSpriteBuffer.SetData(&sprite, sizeof(sprite));
 	mSpriteBuffer.Bind(sizeof(sprite), 0);

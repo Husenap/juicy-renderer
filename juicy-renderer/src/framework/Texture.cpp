@@ -38,16 +38,18 @@ bool Texture::CreateFromFile(const std::string& filepath) {
 
 bool Texture::Create(uint32_t w, uint32_t h, DXGI_FORMAT format, uint8_t* imageData) {
 	return Create(TextureCreateDesc{
-	    .width  = w,
-	    .height = h,
-	    .data   = imageData,
-	    .format = format,
-	});
+	    .width = w, .height = h, .data = imageData, .format = format, .textureType = TextureType::ShaderResource});
 }
 
 bool Texture::Create(const TextureCreateDesc& createDesc) {
+	mTextureType = createDesc.textureType;
+
 	CD3D11_TEXTURE2D_DESC textureDesc(
 	    createDesc.format, createDesc.width, createDesc.height, 1, 1, D3D11_BIND_SHADER_RESOURCE);
+
+	if (mTextureType == TextureType::RenderTarget) {
+		textureDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	}
 
 	D3D11_SUBRESOURCE_DATA initialData{.pSysMem     = createDesc.data,
 	                                   .SysMemPitch = createDesc.width * sizeof(uint8_t) * 4};
@@ -62,20 +64,26 @@ bool Texture::Create(const TextureCreateDesc& createDesc) {
 	CreateFromTexture(mTexture);
 
 	mPixelSize = {createDesc.width, createDesc.height};
-	mStretch = mPixelSize / 100.f;
+	mStretch   = mPixelSize / 100.f;
 
 	return true;
 }
 
 void Texture::CreateFromTexture(ComPtr<ID3D11Texture2D> texture) {
-	MM::Get<Framework>().Device()->CreateShaderResourceView(texture.Get(), nullptr, &mShaderResourceView);
+	auto& device = MM::Get<Framework>().Device();
+
+	device->CreateShaderResourceView(texture.Get(), nullptr, &mShaderResourceView);
+
+	if (mTextureType == TextureType::RenderTarget) {
+		device->CreateRenderTargetView(texture.Get(), nullptr, &mRenderTargetView);
+	}
 }
 
-void Texture::Bind(uint32_t slot) const {
+void Texture::BindSRV(uint32_t slot) const {
 	MM::Get<Framework>().Context()->PSSetShaderResources(slot, 1, mShaderResourceView.GetAddressOf());
 }
 
-void Texture::Unbind(uint32_t slot) const {
+void Texture::UnbindSRV(uint32_t slot) const {
 	ID3D11ShaderResourceView* nullSRV[] = {nullptr};
 	MM::Get<Framework>().Context()->PSSetShaderResources(slot, 1, nullSRV);
 }

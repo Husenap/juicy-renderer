@@ -4,17 +4,15 @@
 
 namespace JR::Widgets {
 
-class Hierarchy : public Widget {
+class Viewport : public Widget {
 public:
-	Hierarchy(ECS& ecs);
+	Viewport()
+	    : Widget("Viewport") {}
 
 protected:
 	virtual void Draw() override;
 
 private:
-	ECS& mECS;
-
-	MessageToken mKeyPressToken;
 };
 
 }  // namespace JR::Widgets

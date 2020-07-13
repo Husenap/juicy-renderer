@@ -6,6 +6,7 @@
 #include "widgets/Hierarchy.h"
 #include "widgets/History.h"
 #include "widgets/Inspector.h"
+#include "widgets/Viewport.h"
 
 namespace JR {
 
@@ -60,6 +61,7 @@ private:
 	Widgets::Hierarchy mHierarchy;
 	Widgets::History mHistory;
 	Widgets::Inspector mInspector;
+	Widgets::Viewport mViewport;
 };
 
 }  // namespace JR

@@ -15,10 +15,15 @@ public:
 		if (ImGui::Begin(mName, &mVisibility)) {
 			Draw();
 		}
+
+		mIsFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
+
 		ImGui::End();
 	}
 
 	void ToggleVisibility() { mVisibility = !mVisibility; }
+
+	bool IsFocused() const { return mIsFocused; }
 
 protected:
 	virtual void Draw() = 0;
@@ -26,6 +31,7 @@ protected:
 private:
 	const char* mName;
 	bool mVisibility = true;
+	bool mIsFocused  = false;
 };
 
 }  // namespace JR::Widgets

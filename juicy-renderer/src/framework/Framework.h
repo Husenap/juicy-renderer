@@ -5,7 +5,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
-#include "renderer/RendererManager.h"
+#include "renderer/RenderManager.h"
 
 namespace JR {
 
@@ -28,7 +28,10 @@ public:
 	const ComPtr<ID3D11Device>& Device() const { return mDevice; }
 	const ComPtr<ID3D11DeviceContext>& Context() const { return mContext; }
 
-	RendererManager& Renderer() { return mRendererManager; }
+	RenderManager& Renderer() { return mRendererManager; }
+
+	auto GetDepthBuffer() const { return mBackBuffer; }
+	//auto GetDepthStencil() const { return mDepthStencil; }
 
 private:
 	IDXGIAdapter* FindBestAdapter();
@@ -39,14 +42,14 @@ private:
 	ComPtr<ID3D11Device> mDevice;
 	ComPtr<ID3D11DeviceContext> mContext;
 
-	ComPtr<ID3D11RenderTargetView> mRenderTarget;
-	ComPtr<ID3D11Texture2D> mDepthBuffer;
-	ComPtr<ID3D11DepthStencilView> mDepthStencil;
-	ComPtr<ID3D11DepthStencilState> mDepthStencilState;
+	ComPtr<ID3D11RenderTargetView> mBackBuffer;
+	//ComPtr<ID3D11Texture2D> mDepthBuffer;
+	//ComPtr<ID3D11DepthStencilView> mDepthStencil;
+	//ComPtr<ID3D11DepthStencilState> mDepthStencilState;
 
 	MessageToken mResizeToken;
 
-	RendererManager mRendererManager;
+	RenderManager mRendererManager;
 };
 
 }  // namespace JR

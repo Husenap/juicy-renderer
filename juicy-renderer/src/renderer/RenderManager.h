@@ -5,10 +5,10 @@
 
 namespace JR {
 
-class RendererManager {
+class RenderManager {
 public:
-	RendererManager();
-	~RendererManager();
+	RenderManager();
+	~RenderManager();
 
 	bool Init();
 
@@ -16,7 +16,11 @@ public:
 
 	void Submit(const RenderCommand& renderCommand);
 
+	const Texture& GetRenderTarget() const { return mRenderTarget; }
+
 private:
+	void CopyRenderTargetToBackBuffer();
+
 	void OnResize(int width, int height);
 	void SetupImGuiStyle();
 	void OnContentScale(glm::vec2 size);
@@ -37,6 +41,16 @@ private:
 
 	MessageToken mResizeToken;
 	MessageToken mContentScaleToken;
+
+	SamplerState mSamplerState;
+	Texture mRenderTarget;
+	Shader mCopyShader;
+
+	struct ScreenTriangleVertex {
+		glm::vec2 pos;
+		glm::vec2 uv;
+	};
+	Buffer mScreenTriangle;
 };
 
 }  // namespace JR
