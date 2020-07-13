@@ -21,6 +21,8 @@ public:
 
 	bool IsValid() const { return mTexture && mShaderResourceView; }
 
+	operator ImTextureID() const { return mShaderResourceView.Get(); }
+
 private:
 	ComPtr<ID3D11Texture2D> mTexture;
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;

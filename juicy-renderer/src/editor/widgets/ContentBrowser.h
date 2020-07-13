@@ -13,6 +13,13 @@ protected:
 	virtual void Draw() override;
 
 private:
+	void DrawTree();
+	void DrawTreeRecursive(std::filesystem::path path);
+	void DrawContent();
+
+	float mZoom = 100.f;
+
+	std::optional<std::filesystem::path> mSelectedDirectory;
 };
 
 }  // namespace JR::Widgets
