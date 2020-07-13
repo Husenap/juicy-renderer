@@ -23,6 +23,13 @@ public:
 		Get().CommitChangesInternal<T>(data, commitMessage);
 	}
 
+	static void FlushChanges() {
+		if (Get().mSnapshotCallback) {
+			Get().mSnapshotCallback();		
+			Get().mSnapshotCallback = {};
+		}
+	}
+
 private:
 	DiffUtil()
 	    : mHasActiveTransaction(false) {}
@@ -48,20 +55,29 @@ private:
 		if (!mEntity) {
 			return;
 		}
-		if (ImGui::IsItemActivated()) {
-			SnapshotInternal(data);
-		}
+
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			LOG_INFO("IsItemDeactivatedAfterEdit: %s", commitMessage);
 			CommitChangesInternal(data, commitMessage);
-		} else if (ImGui::IsItemDeactivated()) {
+		}
+
+		if (ImGui::IsItemDeactivated()) {
+			LOG_INFO("IsItemDeactivated: %s", commitMessage);
 			mHasActiveTransaction = false;
+		}
+
+		if (ImGui::IsItemActivated()) {
+			LOG_INFO("IsItemActivated: %s", commitMessage);
+			mSnapshotCallback = [&]() {
+				SnapshotInternal(data);
+			};
 		}
 	}
 
 	template <typename T>
 	void SnapshotInternal(const T& data) {
 		if (mHasActiveTransaction) {
-			LOG_FATAL("Trying to create a new snapshot in the middle of another transaction!");
+			LOG_ERROR("Trying to create a new snapshot in the middle of another transaction!");
 			return;
 		}
 		mHasActiveTransaction = true;
@@ -72,7 +88,7 @@ private:
 	template <typename T>
 	void CommitChangesInternal(const T& data, const char* commitMessage) {
 		if (!mHasActiveTransaction) {
-			LOG_FATAL("Trying to commit a change without any active transaction!");
+			LOG_ERROR("Trying to commit a change without any active transaction!");
 			return;
 		}
 		std::vector<uint8_t> updatedData;
@@ -88,6 +104,7 @@ private:
 	std::vector<uint8_t> mSnapshot;
 	std::optional<entt::entity> mEntity;
 	bool mHasActiveTransaction;
+	std::function<void()> mSnapshotCallback;
 };
 
 }  // namespace JR

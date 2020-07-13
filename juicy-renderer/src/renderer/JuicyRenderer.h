@@ -18,7 +18,7 @@ public:
 
 private:
 	void RenderSprite(const RCSprite& sprite);
-	void UpdateConstantBuffer();
+	void UpdateConstantBuffer(const Texture& texture);
 
 	Shader mShader;
 	std::array<RCSprite, 2048> mSprites;
@@ -27,7 +27,8 @@ private:
 	struct ConstantBufferData {
 		glm::mat4 ProjectionMatrix;
 		glm::vec4 Resolution;
-		glm::vec4 Time;
+		glm::vec2 Time;
+		glm::vec2 Stretch;
 	} mConstantBufferData;
 	Buffer mConstantBuffer;
 

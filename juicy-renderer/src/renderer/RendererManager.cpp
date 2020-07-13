@@ -121,7 +121,7 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.PopupRounding = 3.f;
 
-	style.WindowPadding    = ImVec2(0.f, 0.f);
+	style.WindowPadding    = ImVec2(2.f, 2.f);
 	style.FramePadding     = ImVec2(4.f, 4.f);
 	style.ItemSpacing      = ImVec2(3.f, 3.f);
 	style.ItemInnerSpacing = ImVec2(3.f, 3.f);
@@ -141,6 +141,8 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.TabBorderSize = 0.f;
 	style.TabRounding   = 3.f;
+
+	style.WindowMenuButtonPosition = ImGuiDir_Right;
 
 	mContentScale = MM::Get<Window>().GetContentScale();
 	UpdateScales();

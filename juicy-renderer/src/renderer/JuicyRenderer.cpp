@@ -37,9 +37,6 @@ void JuicyRenderer::Render() {
 	mSamplerState.Bind(0);
 	mShader.Bind();
 
-	UpdateConstantBuffer();
-	mConstantBuffer.Bind(0);
-
 	std::sort(std::execution::par, mSpriteRenderCommands.begin(), mSpriteRenderCommands.end(), [](auto a, auto b) {
 		return a.position.z > b.position.z;
 	});
@@ -57,14 +54,16 @@ void JuicyRenderer::Render() {
 void JuicyRenderer::RenderSprite(const RCSprite& sprite) {
 	auto& context = MM::Get<Framework>().Context();
 
-	auto& texture = MM::Get<TextureManager>().GetTexture(sprite.texture);
+	auto& texture     = MM::Get<TextureManager>().GetTexture(sprite.texture);
 	auto& backTexture = MM::Get<TextureManager>().GetTexture(sprite.backTexture);
 	texture.Bind(0);
 	backTexture.Bind(1);
 
 	mSpriteBuffer.SetData(&sprite, sizeof(sprite));
-
 	mSpriteBuffer.Bind(sizeof(sprite), 0);
+
+	UpdateConstantBuffer(texture);
+	mConstantBuffer.Bind(0);
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
@@ -75,12 +74,13 @@ void JuicyRenderer::Submit(RCSprite renderCommand) {
 	mSpriteRenderCommands.push_back(renderCommand);
 }
 
-void JuicyRenderer::UpdateConstantBuffer() {
+void JuicyRenderer::UpdateConstantBuffer(const Texture& texture) {
 	auto size = MM::Get<Window>().GetSize();
 
-	mConstantBufferData.ProjectionMatrix = glm::perspectiveFovLH(glm::radians(80.f), size.x, size.y, 0.01f, 100.f);
+	mConstantBufferData.ProjectionMatrix = glm::perspectiveFovLH(glm::radians(80.f), size.x, size.y, 0.1f, 1000.f);
 	mConstantBufferData.Resolution       = glm::vec4(size.x, size.y, size.x / size.y, size.y / size.x);
-	mConstantBufferData.Time             = glm::vec4((float)glfwGetTime());
+	mConstantBufferData.Time             = glm::vec2((float)glfwGetTime());
+	mConstantBufferData.Stretch          = texture.GetStretch();
 
 	mConstantBuffer.SetData(mConstantBufferData);
 }

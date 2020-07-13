@@ -16,7 +16,7 @@ Scene::Scene()
 	for (auto i = 0; i < 10; ++i) {
 		auto entity = mECS.create();
 		mECS.emplace<Identification>(entity, "entity_" + std::to_string(i));
-		mECS.emplace<Transform>(entity, glm::vec3(-2 + i % 3, i / 3, 4.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
+		mECS.emplace<Transform>(entity, glm::vec3(-2 + (i % 3)*10, (i / 3)*10, 150.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
 
 		switch (i % 4) {
 		case 0:

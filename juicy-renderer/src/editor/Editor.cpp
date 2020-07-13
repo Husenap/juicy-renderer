@@ -2,8 +2,11 @@
 
 #include "EditorUtil.h"
 #include "components/Components.h"
+#include "editor/DiffUtil.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
+
+#include <iostream>
 
 namespace JR {
 
@@ -44,15 +47,17 @@ void Editor::Update() {
 	DrawDockSpace();
 	DrawMenuBar();
 
+	static bool demo = true;
+	if (demo) {
+		ImGui::ShowDemoWindow(&demo);
+	}
+
 	mInspector.Update();
 	mHistory.Update();
 	mHierarchy.Update();
 	mContentBrowser.Update();
 
-	static bool demo = true;
-	if (demo) {
-		ImGui::ShowDemoWindow(&demo);
-	}
+	DiffUtil::FlushChanges();
 }
 
 void Editor::DrawDockSpace() {

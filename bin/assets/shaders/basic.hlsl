@@ -13,7 +13,7 @@ void VSMain(in VertexInput input, out GeometryInput output){
 
 [maxvertexcount(4)]
 void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> output){
-    float2 size = 0.5f;
+    float2 size = 0.5f * Stretch;
     const float4 offset[4] = {
         { -size.x, size.y, 0, 0 },
         { size.x, size.y, 0, 0 },

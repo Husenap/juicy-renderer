@@ -21,11 +21,17 @@ public:
 
 	bool IsValid() const { return mTexture && mShaderResourceView; }
 
+	glm::vec2 GetPixelSize() const { return mStretch; }
+	glm::vec2 GetStretch() const { return mStretch; }
+
 	operator ImTextureID() const { return mShaderResourceView.Get(); }
 
 private:
 	ComPtr<ID3D11Texture2D> mTexture;
 	ComPtr<ID3D11ShaderResourceView> mShaderResourceView;
+
+	glm::vec2 mPixelSize;
+	glm::vec2 mStretch;
 };
 
 }  // namespace JR

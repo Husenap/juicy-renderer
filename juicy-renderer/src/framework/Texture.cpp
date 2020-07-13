@@ -61,6 +61,9 @@ bool Texture::Create(const TextureCreateDesc& createDesc) {
 
 	CreateFromTexture(mTexture);
 
+	mPixelSize = {createDesc.width, createDesc.height};
+	mStretch = mPixelSize / 100.f;
+
 	return true;
 }
 
