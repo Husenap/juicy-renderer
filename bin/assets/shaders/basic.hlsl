@@ -1,4 +1,5 @@
 #include "common.hlsl"
+#include "math.hlsl"
 
 SamplerState DefaultSampler : register(s0);
 Texture2D ColorTexture : register(t0);
@@ -48,24 +49,27 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
 
 void PSMain(in PixelInput input, out PixelOutput output) {
     float4 color = ColorTexture.Sample(DefaultSampler, input.uv);
-
-    color.rgb *= color.a;
+    color.rgb = TO_LINEAR(color.rgb);
 
     float4 back = BackTexture.Sample(DefaultSampler, input.uv);
-    back *= color.a;
+    back.rgb = TO_LINEAR(back.rgb);
 
-    float3 frontLightColor = float3(0.625, 0.725, 1.0);
+    float3 frontLightColor = 0.03;
+    frontLightColor = 1.f;
 
-    float3 backLightColor = float3(0.325, 0.625, 1.0).bgr;
+    float3 backLightColor = float3(0.2, 1.0, 0.4);
+    backLightColor = 0.f;
 
-    float3 frontLight = color.rgb * frontLightColor * 1.0;
-    float3 backLight = color.rgb * back.rgb * backLightColor * 1.0;
+    float3 frontLight = color.rgb * frontLightColor;
+    float3 backLight = back.rgb * backLightColor;
 
     float3 col = frontLight + backLight;
 
     float4 finalColor = float4(col, color.a);
     finalColor *= input.tint;
     finalColor.a *= input.blendMode;
+
+    finalColor.rgb = TO_SRGB(finalColor.rgb);
 
     output.color = finalColor;
 }

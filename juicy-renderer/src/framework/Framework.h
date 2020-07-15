@@ -33,6 +33,8 @@ public:
 	auto GetDepthBuffer() const { return mBackBuffer; }
 	//auto GetDepthStencil() const { return mDepthStencil; }
 
+	bool IsPaused() const { return mIsPaused; }
+
 private:
 	IDXGIAdapter* FindBestAdapter();
 	bool CreateTargets(int width, int height);
@@ -50,6 +52,8 @@ private:
 	MessageToken mResizeToken;
 
 	RenderManager mRendererManager;
+
+	bool mIsPaused = false;
 };
 
 }  // namespace JR

@@ -61,7 +61,7 @@ void RenderManager::Render() {
 	mRenderCommands.clear();
 
 	context->OMSetRenderTargets(1, mRenderTarget.GetRTV().GetAddressOf(), nullptr);
-	glm::vec4 clearColor(1.0f, 0.625f, 0.3725f, 1.0f);
+	glm::vec4 clearColor(0.f, 0.f, 0.f, 1.f);
 	context->ClearRenderTargetView(mRenderTarget.GetRTV().Get(), &clearColor.r);
 
 	mJuicyRenderer.Render();
@@ -92,6 +92,10 @@ void RenderManager::Submit(const RenderCommand& renderCommand) {
 }
 
 void RenderManager::OnResize(int width, int height) {
+	if (width == 0 || height == 0) {
+		return;
+	}
+
 	mViewport = D3D11_VIEWPORT{
 	    .TopLeftX = 0,
 	    .TopLeftY = 0,

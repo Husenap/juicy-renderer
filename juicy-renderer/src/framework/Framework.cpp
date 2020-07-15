@@ -198,8 +198,10 @@ bool Framework::CreateTargets(int width, int height) {
 
 void Framework::ResizeBackbuffer(int width, int height) {
 	if (width == 0 || height == 0) {
+		mIsPaused = true;
 		return;
 	}
+	mIsPaused = false;
 
 	mContext->OMSetRenderTargets(0, nullptr, nullptr);
 

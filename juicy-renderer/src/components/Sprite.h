@@ -65,14 +65,10 @@ static void View(Sprite& sprite) {
 		ImGui::DragFloat4("UV", &sprite.uv.x, 0.05f);
 		DiffUtil::HandleTransaction(sprite, "Sprite UV");
 
-		ImGui::Separator();
-
 		ImGui::ColorEdit4("Tint", &sprite.tint.x);
 		DiffUtil::HandleTransaction(sprite, "Sprite Tint");
 
-		ImGui::Separator();
-
-		ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.3f - Alpha Blend");
+		ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.2f - Alpha Blend");
 		DiffUtil::HandleTransaction(sprite, "Sprite Blend Mode");
 
 		ImGui::Separator();

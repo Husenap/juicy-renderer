@@ -57,17 +57,14 @@ private:
 		}
 
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			LOG_INFO("IsItemDeactivatedAfterEdit: %s", commitMessage);
 			CommitChangesInternal(data, commitMessage);
 		}
 
 		if (ImGui::IsItemDeactivated()) {
-			LOG_INFO("IsItemDeactivated: %s", commitMessage);
 			mHasActiveTransaction = false;
 		}
 
 		if (ImGui::IsItemActivated()) {
-			LOG_INFO("IsItemActivated: %s", commitMessage);
 			mSnapshotCallback = [&]() {
 				SnapshotInternal(data);
 			};
