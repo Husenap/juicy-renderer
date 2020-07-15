@@ -155,9 +155,9 @@ bool Framework::CreateTargets(int width, int height) {
 		return false;
 	}
 
+	/*
 	CD3D11_TEXTURE2D_DESC dbd(DXGI_FORMAT_D32_FLOAT, width, height, 1, 1, D3D11_BIND_DEPTH_STENCIL);
 
-	/*
 	hr = mDevice->CreateTexture2D(&dbd, nullptr, &mDepthBuffer);
 	if (FAILED(hr)) {
 		LOG_ERROR("Failed to create Depth Buffer");

@@ -72,11 +72,11 @@ static void View(Sprite& sprite) {
 
 		ImGui::Separator();
 
-		SetTextureId(sprite, sprite.texture, "Texture");
+		SetTextureId(sprite, sprite.texture, "Sprite Texture");
 
 		ImGui::Separator();
 
-		SetTextureId(sprite, sprite.backTexture, "Back Texture");
+		SetTextureId(sprite, sprite.backTexture, "Sprite Back Texture");
 	}
 }
 

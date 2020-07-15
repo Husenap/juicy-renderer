@@ -10,7 +10,7 @@ struct PixelInput{
     float2 uv : TEXCOORD;
 };
 struct PixelOutput{
-    float4 color;
+    float4 color : SV_TARGET;
 };
 
 void VSMain(in VertexInput input, out PixelInput output){
@@ -18,6 +18,6 @@ void VSMain(in VertexInput input, out PixelInput output){
     output.uv = input.uv;
 }
 
-void PSMain(in PixelInput input, out PixelOutput output : SV_TARGET) {
+void PSMain(in PixelInput input, out PixelOutput output) {
     output.color = Texture.Sample(DefaultSampler, input.uv);
 }

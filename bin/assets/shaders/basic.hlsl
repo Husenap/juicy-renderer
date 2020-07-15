@@ -46,7 +46,7 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
     output.RestartStrip();
 }
 
-void PSMain(in PixelInput input, out PixelOutput output : SV_TARGET) {
+void PSMain(in PixelInput input, out PixelOutput output) {
     float4 color = ColorTexture.Sample(DefaultSampler, input.uv);
 
     color.rgb *= color.a;

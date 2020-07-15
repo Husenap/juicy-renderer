@@ -6,7 +6,7 @@
 
 namespace JR::Widgets {
 
-constexpr float MIN_ICON_SCALE = 10.f;
+constexpr float MIN_ICON_SCALE = 16.f;
 constexpr float MAX_ICON_SCALE = 250.f;
 
 void ContentBrowser::Draw() {
@@ -79,10 +79,6 @@ void ContentBrowser::DrawContent() {
 		return;
 	}
 
-	auto& style          = ImGui::GetStyle();
-	const int numButtons = 100;
-	float windowVisibleX = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-
 	std::vector<std::filesystem::path> files;
 
 	for (auto p : std::filesystem::directory_iterator(*mSelectedDirectory)) {
@@ -96,23 +92,49 @@ void ContentBrowser::DrawContent() {
 		files.push_back(relativePath);
 	}
 
+	auto& style          = ImGui::GetStyle();
+	float windowVisibleX = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+	bool useListView     = mZoom < 50.f;
+
+	const ImGuiWindowFlags windowFlags =
+	    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
 	for (auto i = 0; i < files.size(); ++i) {
-		auto textureId = StringId::FromPath(files[i]);
+		auto& filepath = files[i];
+		auto textureId = StringId::FromPath(filepath);
 		auto& texture  = MM::Get<TextureManager>().GetTexture(textureId);
 
-		if (ImGui::ImageButton(texture, {mZoom, mZoom})) {
-			LOG_DEBUG("PRESSED BUTTON!");
-		}
-		if (ImGui::BeginDragDropSource()) {
-			ImGui::SetDragDropPayload("TEXTURE_ID", &textureId, sizeof(textureId));
-			ImGui::Image(texture, {50.f, 50.f});
-			ImGui::EndDragDropSource();
+		auto size =
+		    ImVec2(mZoom + style.FramePadding.x, mZoom + ImGui::GetTextLineHeightWithSpacing() + style.FramePadding.y);
+		if (useListView) {
+			size = ImVec2(0.f, mZoom + style.FramePadding.y);
 		}
 
-		float lastButtonX = ImGui::GetItemRectMax().x;
-		float nextButtonX = lastButtonX + style.ItemSpacing.x + mZoom;
-		if (i + 1 < files.size() && nextButtonX < windowVisibleX) {
-			ImGui::SameLine();
+		if (ImGui::BeginChild(filepath.filename().string().c_str(), size, true, windowFlags)) {
+			ImGui::BeginGroup();
+			ImGui::Image(texture, {mZoom, mZoom});
+			if (useListView) {
+				ImGui::SameLine();
+			}
+			ImGui::Text("%s", filepath.filename().string().c_str());
+			ImGui::EndGroup();
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+				ImGui::SetDragDropPayload("TEXTURE_ID", &textureId, sizeof(textureId));
+				ImGui::Image(texture, {50.f, 50.f});
+				ImGui::SameLine();
+				ImGui::Text("%s", filepath.filename().string().c_str());
+				ImGui::EndDragDropSource();
+			}
+		}
+		ImGui::EndChild();
+
+		if (!useListView) {
+			float lastButtonX = ImGui::GetItemRectMax().x;
+			float nextButtonX = lastButtonX + style.ItemSpacing.x + mZoom;
+			if (i + 1 < files.size() && nextButtonX < windowVisibleX) {
+				ImGui::SameLine();
+			}
 		}
 	}
 }
