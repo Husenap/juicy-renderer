@@ -1,5 +1,7 @@
 #pragma once
 
+#include "editor/DiffUtil.h"
+
 namespace JR::Components {
 
 const std::size_t MAX_LENGTH = 64;

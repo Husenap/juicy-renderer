@@ -10,7 +10,13 @@ public:
 	void ImportFile();
 	void ImportFile(std::filesystem::path importFile);
 
-	std::optional<std::filesystem::path> GetPath(StringId id);
+	std::optional<std::filesystem::path> GetPath(StringId id) const;
+
+	std::filesystem::path GetRelativePath(std::filesystem::path path) const {
+		return path.lexically_relative(mContentPath);
+	}
+
+	std::filesystem::path GetContentPath() const { return mContentPath; }
 
 private:
 	std::filesystem::path mContentPath;

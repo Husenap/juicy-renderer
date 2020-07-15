@@ -1,17 +1,17 @@
-#include "RendererManager.h"
+#include "RenderManager.h"
 
 #include "framework/Framework.h"
 #include "framework/Window.h"
 
 namespace JR {
 
-RendererManager::RendererManager() {}
+RenderManager::RenderManager() {}
 
-RendererManager::~RendererManager() {
+RenderManager::~RenderManager() {
 	ImGui_ImplDX11_Shutdown();
 }
 
-bool RendererManager::Init() {
+bool RenderManager::Init() {
 	if (!mJuicyRenderer.Init()) {
 		return false;
 	}
@@ -19,36 +19,79 @@ bool RendererManager::Init() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NavEnableKeyboard;
+	ImGui::GetIO().IniFilename = "assets/layout.ini";
 	ImGui_ImplDX11_Init(MM::Get<Framework>().Device().Get(), MM::Get<Framework>().Context().Get());
 	ImGui_ImplWin32_Init(MM::Get<Window>().GetHandle());
 
 	SetupImGuiStyle();
 
-	mResizeToken = MM::Get<Window>().Subscribe<EventResize>([&](const auto& message) { OnResize(message.width, message.height); });
+	mResizeToken = MM::Get<Window>().Subscribe<EventResize>([&](const auto& e) { OnResize(e.width, e.height); });
+	mContentScaleToken =
+	    MM::Get<Window>().Subscribe<EventContentScale>([&](const auto& e) { OnContentScale(e.scale); });
+
+	mSamplerState.Create(SamplerState::Filter::Linear, SamplerState::Address::Clamp);
+
+	mCopyShader.Load(Shader::Vertex | Shader::Pixel, "assets/shaders/copy.hlsl");
+
+	const std::vector<ScreenTriangleVertex> screenTriangleData = {
+	    {{-1.f, 3.f}, {0.f, -1.f}},
+	    {{3.f, -1.f}, {2.f, 1.f}},
+	    {{-1.f, -1.f}, {0.f, 1.f}},
+	};
+	if (!mScreenTriangle.Create(CD3D11_BUFFER_DESC(
+	        sizeof(ScreenTriangleVertex) * 3, D3D11_BIND_VERTEX_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE))) {
+		LOG_ERROR("Failed to create Vertex Buffer!");
+		return false;
+	}
+	mScreenTriangle.SetData(screenTriangleData);
 
 	OnResize(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
 	return true;
 }
 
-void RendererManager::Render() {
-	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
+void RenderManager::Render() {
+	auto& context = MM::Get<Framework>().Context();
+
+	context->RSSetViewports(1, &mViewport);
 
 	for (auto& renderCommand : mRenderCommands) {
-		std::visit(overloaded {
-			[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }
-		} , renderCommand);
+		std::visit(overloaded{[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }}, renderCommand);
 	}
 	mRenderCommands.clear();
 
+	context->OMSetRenderTargets(1, mRenderTarget.GetRTV().GetAddressOf(), nullptr);
+	glm::vec4 clearColor(1.0f, 0.625f, 0.3725f, 1.0f);
+	context->ClearRenderTargetView(mRenderTarget.GetRTV().Get(), &clearColor.r);
+
 	mJuicyRenderer.Render();
+
+	CopyRenderTargetToBackBuffer();
 }
 
-void RendererManager::Submit(const RenderCommand& renderCommand) {
+void RenderManager::CopyRenderTargetToBackBuffer() {
+	auto& context    = MM::Get<Framework>().Context();
+	auto& backBuffer = MM::Get<Framework>().GetDepthBuffer();
+
+	context->OMSetRenderTargets(1, backBuffer.GetAddressOf(), nullptr);
+
+	mSamplerState.Bind(0);
+	mRenderTarget.BindSRV(0);
+
+	mCopyShader.Bind();
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	mScreenTriangle.Bind(sizeof(ScreenTriangleVertex), 0);
+	context->Draw(3, 0);
+
+	mRenderTarget.UnbindSRV(0);
+	mSamplerState.Unbind(0);
+}
+
+void RenderManager::Submit(const RenderCommand& renderCommand) {
 	mRenderCommands.push_back(renderCommand);
 }
 
-void RendererManager::OnResize(int width, int height) {
+void RenderManager::OnResize(int width, int height) {
 	mViewport = D3D11_VIEWPORT{
 	    .TopLeftX = 0,
 	    .TopLeftY = 0,
@@ -56,15 +99,28 @@ void RendererManager::OnResize(int width, int height) {
 	    .Height   = static_cast<float>(height),
 	};
 	MM::Get<Framework>().Context()->RSSetViewports(1, &mViewport);
+
+	mRenderTarget.Create(Texture::TextureCreateDesc{.width       = (uint32_t)width,
+	                                                .height      = (uint32_t)height,
+	                                                .data        = nullptr,
+	                                                .format      = DXGI_FORMAT_R8G8B8A8_UNORM,
+	                                                .textureType = Texture::TextureType::RenderTarget});
 }
 
-void RendererManager::SetupImGuiStyle() {
+void RenderManager::SetupImGuiStyle() {
+	for (float f = 1.0f; f <= 4.f; ++f) {
+		FontData fontData;
+		fontData.mScale = f;
+		fontData.mFont  = ImGui::GetIO().Fonts->AddFontFromFileTTF("assets/fonts/Roboto-Regular.ttf", 16.0f * f);
+		mFonts.push_back(fontData);
+	}
+
 	ImGuiStyle& style                      = ImGui::GetStyle();
 	ImVec4* colors                         = style.Colors;
 	colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled]          = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
-	colors[ImGuiCol_WindowBg]              = ImVec4(0.25f, 0.25f, 0.25f, 0.75f);
-	colors[ImGuiCol_ChildBg]               = ImVec4(0.25f, 0.25f, 0.25f, 0.00f);
+	colors[ImGuiCol_WindowBg]              = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+	colors[ImGuiCol_ChildBg]               = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 	colors[ImGuiCol_PopupBg]               = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 	colors[ImGuiCol_Border]                = ImVec4(0.12f, 0.12f, 0.12f, 0.71f);
 	colors[ImGuiCol_BorderShadow]          = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
@@ -114,8 +170,8 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.PopupRounding = 3.f;
 
-	style.WindowPadding    = ImVec2(4.f, 4.f);
-	style.FramePadding     = ImVec2(6.f, 4.f);
+	style.WindowPadding    = ImVec2(2.f, 2.f);
+	style.FramePadding     = ImVec2(4.f, 4.f);
 	style.ItemSpacing      = ImVec2(3.f, 3.f);
 	style.ItemInnerSpacing = ImVec2(3.f, 3.f);
 
@@ -134,6 +190,37 @@ void RendererManager::SetupImGuiStyle() {
 
 	style.TabBorderSize = 0.f;
 	style.TabRounding   = 3.f;
+
+	style.WindowMenuButtonPosition = ImGuiDir_Right;
+
+	mContentScale = MM::Get<Window>().GetContentScale();
+	UpdateScales();
+}
+
+void RenderManager::OnContentScale(glm::vec2 size) {
+	ImGui::GetStyle().ScaleAllSizes(1.f / mContentScale.x);
+
+	mContentScale = size;
+
+	UpdateScales();
+}
+
+void RenderManager::UpdateScales() {
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(mContentScale.x);
+
+	auto& io = ImGui::GetIO();
+
+	io.FontDefault     = nullptr;
+	io.FontGlobalScale = 1.f;
+
+	for (const auto& font : mFonts) {
+		io.FontDefault     = font.mFont;
+		io.FontGlobalScale = mContentScale.x / font.mScale;
+		if (font.mScale >= mContentScale.x) {
+			break;
+		}
+	}
 }
 
 }  // namespace JR

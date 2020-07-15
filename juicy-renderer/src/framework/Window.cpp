@@ -29,8 +29,8 @@ bool Window::Create(const std::string& title, int width, int height) {
 
 	glfwSetFramebufferSizeCallback(mWindow, WindowFramebufferSizeCallback);
 	glfwSetKeyCallback(mWindow, WindowKeyCallback);
-
 	glfwSetDropCallback(mWindow, WindowDropCallback);
+	glfwSetWindowContentScaleCallback(mWindow, WindowContentScaleCallback);
 
 	SetWindowIcon();
 
@@ -64,6 +64,16 @@ void Window::SwapBuffers() const {
 
 HWND Window::GetHandle() const {
 	return glfwGetWin32Window(mWindow);
+}
+
+void Window::SimulateKeyEvent(const EventKey& e) {
+	Emit(e);
+
+	if (e.action == GLFW_PRESS) {
+		Emit(EventKeyPress{e.key, e.scancode, e.mods});
+	} else if (e.action == GLFW_RELEASE) {
+		Emit(EventKeyRelease{e.key, e.scancode, e.mods});
+	}
 }
 
 void Window::WindowFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -102,6 +112,15 @@ void Window::WindowDropCallback(GLFWwindow* window, int count, const char** path
 	for (int i = 0; i < count; ++i) {
 		userWindow->Emit(EventDroppedFile{.filepath = paths[i]});
 	}
+}
+
+void Window::WindowContentScaleCallback(GLFWwindow* window, float scaleX, float scaleY) {
+	auto userWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+	if (!userWindow) {
+		return;
+	}
+
+	userWindow->Emit(EventContentScale{glm::vec2(scaleX, scaleY)});
 }
 
 }  // namespace JR

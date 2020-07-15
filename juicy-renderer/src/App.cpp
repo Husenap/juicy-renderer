@@ -2,8 +2,8 @@
 
 #include "editor/ContentManager.h"
 #include "framework/Framework.h"
-#include "framework/Window.h"
 #include "framework/TextureManager.h"
+#include "framework/Window.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

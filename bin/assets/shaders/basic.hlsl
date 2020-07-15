@@ -13,7 +13,7 @@ void VSMain(in VertexInput input, out GeometryInput output){
 
 [maxvertexcount(4)]
 void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> output){
-    float2 size = 0.5f;
+    float2 size = 0.5f * Stretch;
     const float4 offset[4] = {
         { -size.x, size.y, 0, 0 },
         { size.x, size.y, 0, 0 },
@@ -46,7 +46,7 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
     output.RestartStrip();
 }
 
-void PSMain(in PixelInput input, out PixelOutput output : SV_TARGET) {
+void PSMain(in PixelInput input, out PixelOutput output) {
     float4 color = ColorTexture.Sample(DefaultSampler, input.uv);
 
     color.rgb *= color.a;
@@ -54,8 +54,12 @@ void PSMain(in PixelInput input, out PixelOutput output : SV_TARGET) {
     float4 back = BackTexture.Sample(DefaultSampler, input.uv);
     back *= color.a;
 
-    float3 frontLight = color.rgb *  float3(0.625, 0.725, 1.0).rgb * 1.0;
-    float3 backLight = color.rgb * back.rgb * float3(0.325, 0.625, 1.0).bgr * 1.0;
+    float3 frontLightColor = float3(0.625, 0.725, 1.0);
+
+    float3 backLightColor = float3(0.325, 0.625, 1.0).bgr;
+
+    float3 frontLight = color.rgb * frontLightColor * 1.0;
+    float3 backLight = color.rgb * back.rgb * backLightColor * 1.0;
 
     float3 col = frontLight + backLight;
 

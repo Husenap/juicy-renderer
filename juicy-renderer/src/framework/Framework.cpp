@@ -83,14 +83,6 @@ bool Framework::InitResources() {
 }
 
 void Framework::Render() {
-	mContext->OMSetRenderTargets(1, mRenderTarget.GetAddressOf(), mDepthStencil.Get());
-
-	glm::vec4 clearColor(0.3725f, 0.625f, 1.0f, 1.0f);
-
-	mContext->ClearRenderTargetView(mRenderTarget.Get(), &clearColor.r);
-	mContext->ClearDepthStencilView(mDepthStencil.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	mContext->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
-
 	mRendererManager.Render();
 }
 
@@ -157,12 +149,13 @@ bool Framework::CreateTargets(int width, int height) {
 		return false;
 	}
 
-	hr = mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mRenderTarget);
+	hr = mDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &mBackBuffer);
 	if (FAILED(hr)) {
 		LOG_ERROR("Failed to create Render Target View");
 		return false;
 	}
 
+	/*
 	CD3D11_TEXTURE2D_DESC dbd(DXGI_FORMAT_D32_FLOAT, width, height, 1, 1, D3D11_BIND_DEPTH_STENCIL);
 
 	hr = mDevice->CreateTexture2D(&dbd, nullptr, &mDepthBuffer);
@@ -198,6 +191,7 @@ bool Framework::CreateTargets(int width, int height) {
 		LOG_ERROR("Failed to create Depth Stencil State");
 		return false;
 	}
+	*/
 
 	return true;
 }
@@ -209,9 +203,9 @@ void Framework::ResizeBackbuffer(int width, int height) {
 
 	mContext->OMSetRenderTargets(0, nullptr, nullptr);
 
-	mRenderTarget.Reset();
-	mDepthBuffer.Reset();
-	mDepthStencil.Reset();
+	mBackBuffer.Reset();
+	//mDepthBuffer.Reset();
+	//mDepthStencil.Reset();
 
 	HRESULT hr = mSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
 	if (FAILED(hr)) {

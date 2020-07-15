@@ -1,22 +1,26 @@
 #include "Editor.h"
 
+#include "EditorUtil.h"
 #include "components/Components.h"
+#include "editor/DiffUtil.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
+
+#include <iostream>
 
 namespace JR {
 
 using namespace Components;
 
-Editor::Editor(entt::registry& ecs)
-    : mECS(ecs) {
+Editor::Editor(ECS& ecs)
+    : mECS(ecs)
+    , mInspector(ecs)
+    , mHierarchy(ecs) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
 		}
-		if (e.key == GLFW_KEY_F11) {
-			mShowEditor = !mShowEditor;
-		}
+		HandleKeyPress(e);
 	});
 
 	mTransactionToken = MM::Get<TransactionManager>().Subscribe<EventTransaction>([&](const EventTransaction& message) {
@@ -31,29 +35,35 @@ Editor::Editor(entt::registry& ecs)
 }
 
 void Editor::Update() {
-	if (!mProjectManager.IsLoaded()) {
-		mProjectManager.SelectProject();
-		return;
-	}
-
 	if (!mShowEditor) {
 		return;
 	}
 
 	DrawDockSpace();
-	DrawInspector();
-	DrawHierarchy();
-	DrawHistory();
-	DrawContentBrowser();
+
+	if (!mProjectManager.IsLoaded()) {
+		mProjectManager.SelectProject();
+		return;
+	}
+
+	DrawMenuBar();
 
 	static bool demo = true;
 	if (demo) {
 		ImGui::ShowDemoWindow(&demo);
 	}
+
+	mInspector.Update();
+	mHistory.Update();
+	mHierarchy.Update();
+	mContentBrowser.Update();
+	mViewport.Update();
+
+	DiffUtil::FlushChanges();
 }
 
 void Editor::DrawDockSpace() {
-	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking |
+	ImGuiWindowFlags dockSpaceWindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
 	                                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
 	                                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 	                                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
@@ -64,84 +74,86 @@ void Editor::DrawDockSpace() {
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 	ImGui::Begin("DOCK_SPACE", nullptr, dockSpaceWindowFlags);
 
-	ImGui::SetNextWindowBgAlpha(0.f);
 	ImGui::DockSpace(ImGui::GetID("DOCK_SPACE_WINDOW"), {0.f, 0.f}, ImGuiDockNodeFlags_PassthruCentralNode);
 	ImGui::End();
-	ImGui::PopStyleVar(2);
+	ImGui::PopStyleVar(3);
 }
 
-void Editor::DrawInspector() {
-	if (ImGui::Begin("Inspector")) {
-		if (mSelectedEntity) {
-			for (auto& drawer : mComponentDrawers) {
-				drawer(*mSelectedEntity);
+void Editor::DrawMenuBar() {
+	if (ImGui::BeginMainMenuBar()) {
+		auto& window = MM::Get<Window>();
+
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Save Project", "Ctrl + S")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_S, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
+			if (ImGui::MenuItem("Open Project", "Ctrl + O")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_O, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::MenuItem("Undo", "Ctrl + Z")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Z, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			if (ImGui::MenuItem("Redo", "Ctrl + Y")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Y, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Delete Entity", "Del")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_DELETE, .action = GLFW_PRESS});
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Window")) {
+			if (ImGui::MenuItem("Inspector", "F1")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F1, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("Hierarchy", "F2")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F2, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("Content Browser", "F3")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F3, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("History", "F4")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F4, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("History", "F5")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F5, .action = GLFW_PRESS});
+			}
+			if (ImGui::MenuItem("Fullscreen", "F11")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F11, .action = GLFW_PRESS});
+			}
+			ImGui::EndMenu();
 		}
 	}
-	ImGui::End();
+	ImGui::EndMainMenuBar();
 }
 
-void Editor::DrawHierarchy() {
-	if (ImGui::Begin("Hierarchy")) {
-		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-		                                     ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
-
-		auto view = mECS.view<Identification>();
-
-		std::optional<entt::entity> clickedEntity;
-		for (auto entity : view) {
-			auto& identification = view.get<Identification>(entity);
-
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			if (mSelectedEntity && mSelectedEntity == entity) {
-				nodeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-
-			bool nodeOpen = ImGui::TreeNodeEx((void*)entity, nodeFlags, "%s", identification.name);
-
-			if (ImGui::IsItemClicked()) {
-				clickedEntity = entity;
-			}
-
-			if (nodeOpen) {
-				ImGui::TreePop();
-			}
-		}
-
-		if (clickedEntity) {
-			mSelectedEntity = clickedEntity;
-		}
+void Editor::HandleKeyPress(const EventKeyPress& e) {
+	switch (e.key) {
+	case GLFW_KEY_F1:
+		mInspector.ToggleVisibility();
+		break;
+	case GLFW_KEY_F2:
+		mHierarchy.ToggleVisibility();
+		break;
+	case GLFW_KEY_F3:
+		mContentBrowser.ToggleVisibility();
+		break;
+	case GLFW_KEY_F4:
+		mHistory.ToggleVisibility();
+		break;
+	case GLFW_KEY_F5:
+		mViewport.ToggleVisibility();
+		break;
+	case GLFW_KEY_F11:
+		mShowEditor = !mShowEditor;
+		break;
 	}
-	ImGui::End();
-}
-
-void Editor::DrawHistory() {
-	if (ImGui::Begin("History")) {
-		const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth |
-		                                     ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen |
-		                                     ImGuiTreeNodeFlags_Bullet;
-
-		MM::Get<TransactionManager>().EnumerateUndoStack([](const std::string& commitMessage, bool isActive) {
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			if (isActive) {
-				nodeFlags |= ImGuiTreeNodeFlags_Selected;
-			}
-			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
-		});
-		MM::Get<TransactionManager>().EnumerateRedoStack([](const std::string& commitMessage) {
-			ImGuiTreeNodeFlags nodeFlags = baseFlags;
-			ImGui::TreeNodeEx(commitMessage.c_str(), nodeFlags);
-		});
-	}
-	ImGui::End();
-}
-
-void Editor::DrawContentBrowser() {
-	if (ImGui::Begin("Content Browser")) {
-	}
-	ImGui::End();
 }
 
 }  // namespace JR

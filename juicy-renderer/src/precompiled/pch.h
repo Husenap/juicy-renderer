@@ -50,8 +50,12 @@ using Microsoft::WRL::ComPtr;
 #include <examples/imgui_impl_dx11.h>
 #include <examples/imgui_impl_win32.h>
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+#include <entt/entity/registry.hpp>
+using ECS = entt::registry;
 
 // Juicy Renderer Includes
 #include "module/Module.h"

@@ -54,7 +54,7 @@ void ContentManager::ImportFile(std::filesystem::path importFile) {
 	mFileMap[StringId::FromPath(filename)] = (mContentPath / filename);
 }
 
-std::optional<std::filesystem::path> ContentManager::GetPath(StringId id) {
+std::optional<std::filesystem::path> ContentManager::GetPath(StringId id) const {
 	auto it = mFileMap.find(id);
 
 	if (it == mFileMap.end()) {
