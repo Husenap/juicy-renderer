@@ -7,6 +7,7 @@ namespace JR {
 class TextureManager : public Module {
 public:
 	const Texture& GetTexture(StringId id);
+	const Texture& GetDefaultTexture();
 
 private:
 	void ValidateDefaultTexture();

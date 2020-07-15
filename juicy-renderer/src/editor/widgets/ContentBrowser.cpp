@@ -97,21 +97,29 @@ void ContentBrowser::DrawContent() {
 	bool useListView     = mZoom < 50.f;
 
 	const ImGuiWindowFlags windowFlags =
-	    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysUseWindowPadding;
 
+	std::optional<StringId> hoveredFile;
 	for (auto i = 0; i < files.size(); ++i) {
 		auto& filepath = files[i];
-		auto textureId = StringId::FromPath(filepath);
-		auto& texture  = MM::Get<TextureManager>().GetTexture(textureId);
+		auto fileId = StringId::FromPath(filepath);
+		auto& texture  = MM::Get<TextureManager>().GetTexture(fileId);
+		auto& defaultTexture  = MM::Get<TextureManager>().GetDefaultTexture();
 
 		auto size =
-		    ImVec2(mZoom + style.FramePadding.x, mZoom + ImGui::GetTextLineHeightWithSpacing() + style.FramePadding.y);
+		    ImVec2(mZoom + style.WindowPadding.x*2.0f, mZoom + ImGui::GetTextLineHeightWithSpacing() + style.WindowPadding.y*2.0f);
 		if (useListView) {
-			size = ImVec2(0.f, mZoom + style.FramePadding.y);
+			size = ImVec2(0.f, mZoom + style.WindowPadding.y*2.0f);
 		}
 
-		if (ImGui::BeginChild(filepath.filename().string().c_str(), size, true, windowFlags)) {
+		if (mHoveredFile && *mHoveredFile == fileId) {
+			ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.35f, 0.35f, 0.35f, 1.00f});
+		}
+		if (ImGui::BeginChild(filepath.filename().string().c_str(), size, false, windowFlags)) {
 			ImGui::BeginGroup();
+			auto cursorPos = ImGui::GetCursorPos();
+			ImGui::Image(defaultTexture, {mZoom, mZoom});
+			ImGui::SetCursorPos(cursorPos);
 			ImGui::Image(texture, {mZoom, mZoom});
 			if (useListView) {
 				ImGui::SameLine();
@@ -120,14 +128,24 @@ void ContentBrowser::DrawContent() {
 			ImGui::EndGroup();
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-				ImGui::SetDragDropPayload("TEXTURE_ID", &textureId, sizeof(textureId));
-				ImGui::Image(texture, {50.f, 50.f});
+				ImGui::SetDragDropPayload("TEXTURE_ID", &fileId, sizeof(fileId));
+				auto cursorPos = ImGui::GetCursorPos();
+				auto thumbnailSize = ImVec2(50.f, 50.f);
+				ImGui::Image(defaultTexture, thumbnailSize);
+				ImGui::SetCursorPos(cursorPos);
+				ImGui::Image(texture, thumbnailSize);
 				ImGui::SameLine();
 				ImGui::Text("%s", filepath.filename().string().c_str());
 				ImGui::EndDragDropSource();
 			}
 		}
 		ImGui::EndChild();
+		if (mHoveredFile && *mHoveredFile == fileId) {
+			ImGui::PopStyleColor();
+		}
+		if (ImGui::IsItemHovered()) {
+			hoveredFile = fileId;
+		}
 
 		if (!useListView) {
 			float lastButtonX = ImGui::GetItemRectMax().x;
@@ -137,6 +155,8 @@ void ContentBrowser::DrawContent() {
 			}
 		}
 	}
+
+	mHoveredFile = hoveredFile;
 }
 
 }  // namespace JR::Widgets

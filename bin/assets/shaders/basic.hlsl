@@ -54,8 +54,12 @@ void PSMain(in PixelInput input, out PixelOutput output) {
     float4 back = BackTexture.Sample(DefaultSampler, input.uv);
     back *= color.a;
 
-    float3 frontLight = color.rgb *  float3(0.625, 0.725, 1.0).rgb * 1.0;
-    float3 backLight = color.rgb * back.rgb * float3(0.325, 0.625, 1.0).bgr * 1.0;
+    float3 frontLightColor = float3(0.625, 0.725, 1.0);
+
+    float3 backLightColor = float3(0.325, 0.625, 1.0).bgr;
+
+    float3 frontLight = color.rgb * frontLightColor * 1.0;
+    float3 backLight = color.rgb * back.rgb * backLightColor * 1.0;
 
     float3 col = frontLight + backLight;
 

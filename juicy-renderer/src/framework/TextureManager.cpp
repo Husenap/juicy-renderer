@@ -31,6 +31,11 @@ const JR::Texture& TextureManager::GetTexture(StringId id) {
 	return it->second;
 }
 
+const Texture& TextureManager::GetDefaultTexture() {
+	ValidateDefaultTexture();
+	return mDefaultTexture;
+}
+
 void TextureManager::ValidateDefaultTexture() {
 	if (mDefaultTexture.IsValid()) {
 		return;

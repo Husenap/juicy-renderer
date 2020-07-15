@@ -23,10 +23,15 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 	}
 
 	auto& texture = MM::Get<TextureManager>().GetTexture(textureId);
+	auto& defaultTexture = MM::Get<TextureManager>().GetDefaultTexture();
 
 	ImGui::BeginGroup();
 
-	ImGui::Image(texture, {100.f, 100.f});
+	auto cursorPos = ImGui::GetCursorPos();
+	auto thumbnailSize = ImVec2(100.f, 100.f);
+	ImGui::Image(defaultTexture, thumbnailSize);
+	ImGui::SetCursorPos(cursorPos);
+	ImGui::Image(texture, thumbnailSize);
 
 	ImGui::PushID(&textureId);
 	if (ImGui::InputText(label, &texturePath, ImGuiInputTextFlags_AutoSelectAll)) {

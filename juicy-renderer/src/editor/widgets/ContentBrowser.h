@@ -20,6 +20,7 @@ private:
 	float mZoom = 100.f;
 
 	std::optional<std::filesystem::path> mSelectedDirectory;
+	std::optional<StringId> mHoveredFile;
 };
 
 }  // namespace JR::Widgets
