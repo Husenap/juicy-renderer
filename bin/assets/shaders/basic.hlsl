@@ -24,12 +24,12 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
 
     const float2 uv[4] = {
         {input[0].uv.x, input[0].uv.y},
-        {input[0].uv.z, input[0].uv.y},
-        {input[0].uv.x, input[0].uv.w},
-        {input[0].uv.z, input[0].uv.w},
+        {input[0].uv.x + input[0].uv.z, input[0].uv.y},
+        {input[0].uv.x, input[0].uv.y + input[0].uv.w},
+        {input[0].uv.x + input[0].uv.z, input[0].uv.y + input[0].uv.w},
     };
 
-    const float2 duv = uv[3] - uv[0];
+    const float2 duv = input[0].uv.zw;
 
     PixelInput vertex;
     for(int i = 0; i < 4; ++i){

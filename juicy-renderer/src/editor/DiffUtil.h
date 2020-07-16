@@ -92,8 +92,8 @@ private:
 		updatedData.resize(sizeof(data));
 		std::memcpy(updatedData.data(), &data, sizeof(data));
 
-		MM::Get<TransactionManager>().RecordTransaction(
-		    *mEntity, mSnapshot, updatedData, commitMessage, TypeId::Get<T>());
+		MM::Get<TransactionManager>().RecordComponentTransaction(
+		    *mEntity, mSnapshot, updatedData, commitMessage, Components::ComponentTypeId::Get<T>());
 
 		mHasActiveTransaction = false;
 	}

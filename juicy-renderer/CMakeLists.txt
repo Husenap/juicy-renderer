@@ -44,6 +44,8 @@ set(src_editor
 )
 
 set(src_components
+    "src/components/ComponentTypeId.h"
+    "src/components/ComponentTypeId.cpp"
     "src/components/Identification.h"
     "src/components/Transform.h"
     "src/components/Sprite.h"

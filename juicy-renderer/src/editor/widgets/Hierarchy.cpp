@@ -6,16 +6,26 @@
 
 namespace JR::Widgets {
 
+static auto CreateEntitySnapshot(entt::entity entity) {
+
+}
+
 Hierarchy::Hierarchy(ECS& ecs)
     : Widget("Hierarchy")
     , mECS(ecs) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
+		if (e.key == GLFW_KEY_N && e.mods == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) {
+			auto entity = mECS.create();
+			mECS.emplace<Components::Identification>(entity);
+			mECS.emplace<Components::Transform>(entity);
+
+			MM::Get<TransactionManager>().AddEntity(entity, "Added Entity", CreateEntitySnapshot(entity));
+		}
 		if (e.key == GLFW_KEY_DELETE) {
 			auto selectedEntity = EditorUtil::GetSelectedEntity();
 			if (selectedEntity) {
-				mECS.destroy(*selectedEntity);
+				MM::Get<TransactionManager>().RemoveEntity(*selectedEntity, "Removed Entity", CreateEntitySnapshot(*selectedEntity));
 			}
-			EditorUtil::SelectEntity();
 		}
 	});
 }

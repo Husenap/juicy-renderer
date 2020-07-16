@@ -44,7 +44,7 @@ Scene::Scene()
 			                     StringId::FromPath("pillar_back.png"));
 			break;
 		default:
-			mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
+			//mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
 			break;
 		}
 	}

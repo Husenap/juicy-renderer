@@ -12,7 +12,6 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include <typeinfo>
 #include <variant>
 #include <vector>
 

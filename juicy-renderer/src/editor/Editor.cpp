@@ -23,14 +23,60 @@ Editor::Editor(ECS& ecs)
 		HandleKeyPress(e);
 	});
 
-	mTransactionToken = MM::Get<TransactionManager>().Subscribe<EventTransaction>([&](const EventTransaction& message) {
-		auto it = mTransactionHandlers.find(message.componentId);
-		if (it == mTransactionHandlers.end()) {
-			LOG_ERROR("Failed to find transaction handler for component with id: %d!", message.componentId);
+	auto& transactionManager = MM::Get<TransactionManager>();
+
+	mTransactionToken =
+	    transactionManager.Subscribe<EventComponentTransaction>([&](const EventComponentTransaction& message) {
+		    auto it = mTransactionHandlers.find(message.componentId);
+		    if (it == mTransactionHandlers.end()) {
+			    LOG_ERROR("Failed to find transaction handler for component with id: %d!", message.componentId);
+			    return;
+		    }
+
+		    it->second(message);
+	    });
+
+	mAddComponentToken = transactionManager.Subscribe<EventAddComponent>([&](const EventAddComponent& message) {
+		auto it = mAddComponentHandlers.find(message.componentId);
+		if (it == mAddComponentHandlers.end()) {
+			LOG_ERROR("Failed to find add component handler for component with id: %d!", message.componentId);
 			return;
 		}
 
 		it->second(message);
+	});
+
+	mRemoveComponentToken =
+	    transactionManager.Subscribe<EventRemoveComponent>([&](const EventRemoveComponent& message) {
+		    auto it = mRemoveComponentHandlers.find(message.componentId);
+		    if (it == mRemoveComponentHandlers.end()) {
+			    LOG_ERROR("Failed to find remove component handler for component with id: %d!", message.componentId);
+			    return;
+		    }
+
+		    it->second(message);
+	    });
+
+	mAddEntityToken = transactionManager.Subscribe<EventAddEntity>([&](const EventAddEntity& message) {
+		if (!mECS.valid(message.entity)) {
+			mECS.create(message.entity);
+		}
+
+		for (auto& [componentId, data] : message.componentData) {
+			auto it = mAddComponentHandlers.find(componentId);
+			if (it != mAddComponentHandlers.end()) {
+				it->second(EventAddComponent{.data = data, .entity = message.entity, .componentId = componentId});
+			}
+		}
+
+		EditorUtil::SelectEntity(message.entity);
+	});
+
+	mRemoveEntityToken = transactionManager.Subscribe<EventRemoveEntity>([&](const EventRemoveEntity& message) {
+		if (mECS.valid(message.entity)) {
+			mECS.destroy(message.entity);
+		}
+		EditorUtil::SelectEntity();
 	});
 }
 
