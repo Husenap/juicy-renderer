@@ -31,10 +31,10 @@ HRESULT CompileShader(const std::string& filepath,
 	                                &errorBlob);
 
 	if (FAILED(hr)) {
-		LOG_ERROR("Failed to compile shader[%s]: %s", entryPoint.c_str(), filepath.c_str());
+		LOG_ERROR("Failed to compile shader[{}]: {}", entryPoint.c_str(), filepath.c_str());
 
 		if (errorBlob) {
-			LOG_ERROR("Shader Error:\n%s\n", static_cast<char*>(errorBlob->GetBufferPointer()));
+			LOG_ERROR("Shader Error:\n{}\n", static_cast<char*>(errorBlob->GetBufferPointer()));
 		}
 
 		return hr;
@@ -105,7 +105,7 @@ HRESULT CreateInputLayout(ComPtr<ID3DBlob> vsBlob, ComPtr<ID3D11InputLayout>& in
 	});
 
 	HRESULT hr = MM::Get<Framework>().Device()->CreateInputLayout(inputElementDescs.data(),
-	                                                              inputElementDescs.size(),
+	                                                              static_cast<UINT>(inputElementDescs.size()),
 	                                                              vsBlob->GetBufferPointer(),
 	                                                              vsBlob->GetBufferSize(),
 	                                                              &inputLayout);
@@ -122,7 +122,7 @@ void CreateResourceBindings(ComPtr<ID3DBlob> psBlob) {
 	shaderReflection.Reflect(psBlob);
 
 	shaderReflection.ProcessBoundResources(
-	    [](auto resourceDesc) { LOG_INFO("Shader Resource: %s", resourceDesc.Name); });
+	    [](auto resourceDesc) { LOG_INFO("Shader Resource: {}", resourceDesc.Name); });
 }
 
 bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::string& filepath) {

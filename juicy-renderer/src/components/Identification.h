@@ -9,8 +9,8 @@ static constexpr std::size_t MAX_LENGTH = 64;
 }  // namespace IdentificationInternal
 
 struct Identification {
-	Identification() { sprintf(name, "%s", "New Entity"); }
-	Identification(const std::string& strName) { sprintf(name, "%s", strName.c_str()); }
+	Identification() { sprintf_s(name, "%s", "New Entity"); }
+	Identification(const std::string& strName) { sprintf_s(name, "%s", strName.c_str()); }
 
 	char name[64];
 

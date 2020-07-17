@@ -30,7 +30,7 @@ public:
 
 	RenderManager& Renderer() { return mRendererManager; }
 
-	auto GetDepthBuffer() const { return mBackBuffer; }
+	auto& GetDepthBuffer() const { return mBackBuffer; }
 	//auto GetDepthStencil() const { return mDepthStencil; }
 
 	bool IsPaused() const { return mIsPaused; }

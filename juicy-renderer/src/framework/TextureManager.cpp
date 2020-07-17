@@ -28,7 +28,7 @@ const JR::Texture& TextureManager::GetTexture(StringId id) {
 		};
 
 		if (!textureLoader()) {
-			LOG_ERROR("Failed to load texture from file: %s", path->string().c_str());
+			LOG_ERROR("Failed to load texture from file: {}", path->string());
 			ValidateDefaultTexture();
 			return mDefaultTexture;
 		}

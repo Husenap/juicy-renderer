@@ -123,8 +123,10 @@ IDXGIAdapter* Framework::FindBestAdapter() {
 		DXGI_ADAPTER_DESC adapterDesc;
 		adapters[i]->GetDesc(&adapterDesc);
 
-		LOG_INFO(
-		    "Found adapter: %ls VRAM: %uMB", adapterDesc.Description, adapterDesc.DedicatedVideoMemory / (1 << 20));
+		std::wstring wDesc(adapterDesc.Description);
+		std::string sDesc(wDesc.size(), '\0');
+		WideCharToMultiByte(CP_UTF8, 0, wDesc.data(), static_cast<int>(wDesc.size()), sDesc.data(), static_cast<int>(sDesc.size()), NULL, NULL);
+		LOG_INFO( "Found adapter: {} VRAM: {}MB", sDesc, adapterDesc.DedicatedVideoMemory / (1 << 20));
 
 		if (bestAdapter) {
 			DXGI_ADAPTER_DESC bestAdapterDesc;
@@ -141,7 +143,7 @@ IDXGIAdapter* Framework::FindBestAdapter() {
 	return bestAdapter;
 }
 
-bool Framework::CreateTargets(int width, int height) {
+bool Framework::CreateTargets(int /*width*/, int /*height*/) {
 	ComPtr<ID3D11Texture2D> backBuffer;
 	HRESULT hr = mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
 	if (FAILED(hr)) {

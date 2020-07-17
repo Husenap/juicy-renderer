@@ -32,6 +32,8 @@ overloaded(Ts...) -> overloaded<Ts...>;
 using Microsoft::WRL::ComPtr;
 
 // Thirdparty Includes
+#include <fmt/format.h>
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
@@ -61,8 +63,10 @@ using ECS = entt::registry;
 
 #include "util/Logger.h"
 
+#include "components/ComponentTypeId.h"
+#include "util/TypeId.h"
+
 #include "module/ModuleManager.h"
 #include "util/FileWatcher.h"
 #include "util/MessageEmitter.h"
 #include "util/StringId.h"
-#include "util/TypeId.h"

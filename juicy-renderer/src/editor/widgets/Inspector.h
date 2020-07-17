@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Widget.h"
+#include "editor/DiffUtil.h"
 
 namespace JR::Widgets {
 

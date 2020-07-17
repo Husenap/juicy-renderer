@@ -11,12 +11,12 @@ bool Texture::CreateFromFile(const std::string& filepath) {
 	uint8_t* rawData = stbi_load(filepath.c_str(), &w, &h, &comp, STBI_rgb_alpha);
 
 	if (!rawData) {
-		LOG_ERROR("Failed to load image: %s", filepath.c_str());
+		LOG_ERROR("Failed to load image: {}", filepath);
 		return false;
 	}
 
 	if (!Create(w, h, DXGI_FORMAT_R8G8B8A8_UNORM, rawData)) {
-		LOG_ERROR("Failed to create image: %s", filepath.c_str());
+		LOG_ERROR("Failed to create image: {}", filepath);
 		stbi_image_free(rawData);
 		return false;
 	}

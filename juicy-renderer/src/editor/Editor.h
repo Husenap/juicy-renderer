@@ -34,12 +34,12 @@ private:
 
 		mTransactionHandlers[componentId] = [&](const EventComponentTransaction& action) {
 			if (!mECS.valid(action.entity)) {
-				LOG_ERROR("Tried to handle transaction for invalid entity: component: %s", Component::GetDisplayName());
+				LOG_ERROR("Tried to handle transaction for invalid entity: component: {}", Component::GetDisplayName());
 				return;
 			}
 
 			if (!mECS.has<Component>(action.entity)) {
-				LOG_ERROR("Tried to handle transaction for entity that's missing a component: component: %s",
+				LOG_ERROR("Tried to handle transaction for entity that's missing a component: component: {}",
 				          Component::GetDisplayName());
 				return;
 			}
@@ -50,12 +50,12 @@ private:
 
 		mAddComponentHandlers[componentId] = [&](const EventAddComponent& action) {
 			if (!mECS.valid(action.entity)) {
-				LOG_ERROR("Tried to add component on invalid entity: component: %s", Component::GetDisplayName());
+				LOG_ERROR("Tried to add component on invalid entity: component: {}", Component::GetDisplayName());
 				return;
 			}
 
 			if (mECS.has<Component>(action.entity)) {
-				LOG_ERROR("Tried to add component on entity that already has component: %s",
+				LOG_ERROR("Tried to add component on entity that already has component: {}",
 				          Component::GetDisplayName());
 				return;
 			}
@@ -68,12 +68,12 @@ private:
 
 		mRemoveComponentHandlers[componentId] = [&](const EventRemoveComponent& action) {
 			if (!mECS.valid(action.entity)) {
-				LOG_ERROR("Tried to remove component from invalid entity: component: %s", Component::GetDisplayName());
+				LOG_ERROR("Tried to remove component from invalid entity: component: {}", Component::GetDisplayName());
 				return;
 			}
 
 			if (!mECS.has<Component>(action.entity)) {
-				LOG_ERROR("Tried to remove component from entity that's missing that component: %s",
+				LOG_ERROR("Tried to remove component from entity that's missing that component: {}",
 				          Component::GetDisplayName());
 				return;
 			}

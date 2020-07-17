@@ -6,10 +6,6 @@
 
 namespace JR::Widgets {
 
-static auto CreateEntitySnapshot(entt::entity entity) {
-
-}
-
 Hierarchy::Hierarchy(ECS& ecs)
     : Widget("Hierarchy")
     , mECS(ecs) {

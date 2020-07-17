@@ -29,7 +29,7 @@ Editor::Editor(ECS& ecs)
 	    transactionManager.Subscribe<EventComponentTransaction>([&](const EventComponentTransaction& message) {
 		    auto it = mTransactionHandlers.find(message.componentId);
 		    if (it == mTransactionHandlers.end()) {
-			    LOG_ERROR("Failed to find transaction handler for component with id: %d!", message.componentId);
+			    LOG_ERROR("Failed to find transaction handler for component with id: {}!", message.componentId);
 			    return;
 		    }
 
@@ -39,7 +39,7 @@ Editor::Editor(ECS& ecs)
 	mAddComponentToken = transactionManager.Subscribe<EventAddComponent>([&](const EventAddComponent& message) {
 		auto it = mAddComponentHandlers.find(message.componentId);
 		if (it == mAddComponentHandlers.end()) {
-			LOG_ERROR("Failed to find add component handler for component with id: %d!", message.componentId);
+			LOG_ERROR("Failed to find add component handler for component with id: {}!", message.componentId);
 			return;
 		}
 
@@ -50,7 +50,7 @@ Editor::Editor(ECS& ecs)
 	    transactionManager.Subscribe<EventRemoveComponent>([&](const EventRemoveComponent& message) {
 		    auto it = mRemoveComponentHandlers.find(message.componentId);
 		    if (it == mRemoveComponentHandlers.end()) {
-			    LOG_ERROR("Failed to find remove component handler for component with id: %d!", message.componentId);
+			    LOG_ERROR("Failed to find remove component handler for component with id: {}!", message.componentId);
 			    return;
 		    }
 
@@ -149,9 +149,13 @@ void Editor::DrawMenuBar() {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Y, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
 			ImGui::Separator();
+			if (ImGui::MenuItem("Create Entity", "Ctrl + Shift + N")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_N, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL | GLFW_MOD_SHIFT});
+			}
 			if (ImGui::MenuItem("Delete Entity", "Del")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_DELETE, .action = GLFW_PRESS});
 			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Window")) {
@@ -173,6 +177,7 @@ void Editor::DrawMenuBar() {
 			if (ImGui::MenuItem("Fullscreen", "F11")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F11, .action = GLFW_PRESS});
 			}
+
 			ImGui::EndMenu();
 		}
 	}

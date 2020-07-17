@@ -7,6 +7,8 @@ public:
 	Widget(const char* name)
 	    : mName(name) {}
 
+	virtual ~Widget() {}
+
 	void Update() {
 		if (!mVisibility) {
 			return;

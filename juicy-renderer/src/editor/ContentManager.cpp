@@ -6,7 +6,7 @@
 
 namespace JR {
 
-constexpr char* NAME_CONTENT_DIRECTORY = "Content";
+constexpr char const* NAME_CONTENT_DIRECTORY = "Content";
 
 static const std::vector<std::wstring> ACCEPTED_FILES{L"png"};
 

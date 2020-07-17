@@ -38,7 +38,7 @@ public:
 		}
 
 		for (auto& filepath : mChanges) {
-			LOG_INFO("Reloading File: %s", filepath.c_str());
+			LOG_INFO("Reloading File: {}", filepath);
 			mEntries[filepath].callback();
 		}
 

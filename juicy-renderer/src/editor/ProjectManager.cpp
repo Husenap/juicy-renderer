@@ -79,7 +79,7 @@ void ProjectManager::CreateNewProject() {
 void ProjectManager::LoadProject() {
 	auto openFile = JFD::FileDialog::OpenFile({L"jrproj"});
 	if (openFile) {
-		LOG_INFO("Opening file: %ls", openFile->c_str());
+		LOG_INFO("Opening file: {}", openFile->generic_string());
 		LoadProject(*openFile);
 	}
 }
@@ -103,7 +103,7 @@ void ProjectManager::SaveProject() {
 	auto saveFile = JFD::FileDialog::SaveFile({L"jrproj"});
 	if (saveFile) {
 		saveFile->replace_extension("jrproj");
-		LOG_INFO("Saving file: %ls", saveFile->c_str());
+		LOG_INFO("Saving file: {}", saveFile->generic_string());
 	}
 }
 

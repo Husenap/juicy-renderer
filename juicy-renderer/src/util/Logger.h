@@ -9,7 +9,16 @@ public:
 	enum class LogLevel { Debug, Info, Warning, Error, Fatal, Count };
 
 	void SetLevel(LogLevel level) { mLevel = level; }
-	void Log(LogLevel level, const char* file, uint32_t line, const char* function, const char* format, ...);
+
+	template <typename... Args>
+	void Log(LogLevel level,
+	         const char* file,
+	         uint32_t line,
+	         const char* function,
+	         const char* formatString,
+	         Args&&... args) {
+		InternalLog(level, file, line, function, fmt::format(formatString, std::forward<Args>(args)...));
+	}
 
 	static constexpr int DebugIdx   = 1;
 	static constexpr int InfoIdx    = 2;
@@ -19,10 +28,10 @@ public:
 	static constexpr int DarkIdx    = 7;
 
 private:
+	void InternalLog(LogLevel level, const char* file, uint32_t line, const char* function, const std::string& text);
 	const char* GetLevelString(LogLevel level);
 
 	LogLevel mLevel;
-	std::vector<char> mBuffer;
 };
 
 #ifdef _DEBUG

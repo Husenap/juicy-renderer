@@ -14,7 +14,7 @@ protected:
 
 private:
 	void DrawTree();
-	void DrawTreeRecursive(std::filesystem::path path);
+	void DrawTreeRecursive(std::filesystem::path currentPath);
 	void DrawContent();
 
 	float mZoom = 100.f;

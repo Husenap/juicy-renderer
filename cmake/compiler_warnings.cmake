@@ -25,8 +25,7 @@ if (MSVC)
         /w14906					# string literal cast to 'LPWSTR'
         /w14928
         
-    	/wd4201					# nonstandard extension used : nameless struct/union
-        )
+        /wd4201)				# nonstandard extension used : nameless struct/union
 else()
     target_compile_options(compiler-warnings INTERFACE 
         -Wall                   # reasonable and standard
