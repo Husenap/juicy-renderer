@@ -32,6 +32,8 @@ private:
 
 	template <typename Component>
 	void RegisterTransactionHandler() {
+		static_assert(std::is_trivially_copyable_v<Component>, "Components need to be trivially copyable!");
+
 		auto componentId = Components::ComponentTypeId::Get<Component>();
 
 		mTransactionHandlers[componentId] = [&](const EventComponentTransaction& action) {
