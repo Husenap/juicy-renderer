@@ -45,6 +45,8 @@ bool RenderManager::Init() {
 	}
 	mScreenTriangle.SetData(screenTriangleData);
 
+	mClearColor = {0.f, 0.f, 0.f, 1.f};
+
 	OnResize(MM::Get<Window>().GetWidth(), MM::Get<Window>().GetHeight());
 
 	return true;
@@ -56,13 +58,16 @@ void RenderManager::Render() {
 	context->RSSetViewports(1, &mViewport);
 
 	for (auto& renderCommand : mRenderCommands) {
-		std::visit(overloaded{[&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); }}, renderCommand);
+		std::visit(overloaded{
+		               [&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); },
+		               [&](RCClearColor clearColor) { mClearColor = clearColor.color; },
+		           },
+		           renderCommand);
 	}
 	mRenderCommands.clear();
 
 	context->OMSetRenderTargets(1, mRenderTarget.GetRTV().GetAddressOf(), nullptr);
-	glm::vec4 clearColor(0.f, 0.f, 0.f, 1.f);
-	context->ClearRenderTargetView(mRenderTarget.GetRTV().Get(), &clearColor.r);
+	context->ClearRenderTargetView(mRenderTarget.GetRTV().Get(), &mClearColor.r);
 
 	mJuicyRenderer.Render();
 

@@ -10,9 +10,11 @@
 
 namespace JR {
 
+class Scene;
+
 class Editor {
 public:
-	Editor(ECS& ecs);
+	Editor(Scene& scene, ECS& ecs);
 
 	template <typename... Components>
 	void Init() {
@@ -82,6 +84,7 @@ private:
 		};
 	}
 
+	Scene& mScene;
 	ECS& mECS;
 
 	ProjectManager mProjectManager;

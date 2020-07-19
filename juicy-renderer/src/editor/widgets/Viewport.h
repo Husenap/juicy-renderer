@@ -6,13 +6,16 @@ namespace JR::Widgets {
 
 class Viewport : public Widget {
 public:
-	Viewport()
-	    : Widget("Viewport") {}
+	Viewport(glm::vec4& backgroundColor)
+	    : Widget("Viewport")
+	    , mBackgroundColor(backgroundColor) {}
 
 protected:
 	virtual void Draw() override;
+	virtual void DrawContextMenu() override;
 
 private:
+	glm::vec4& mBackgroundColor;
 };
 
 }  // namespace JR::Widgets

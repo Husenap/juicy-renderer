@@ -15,7 +15,10 @@ public:
 		}
 
 		if (ImGui::Begin(mName, &mVisibility)) {
+			ImGui::BeginChild(ImGui::GetID(this));
 			Draw();
+			ImGui::EndChild();
+			DrawContextMenu();
 		}
 
 		mIsFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
@@ -29,6 +32,7 @@ public:
 
 protected:
 	virtual void Draw() = 0;
+	virtual void DrawContextMenu() {}
 
 private:
 	const char* mName;

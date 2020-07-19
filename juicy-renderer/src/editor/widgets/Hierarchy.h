@@ -15,6 +15,7 @@ public:
 
 protected:
 	virtual void Draw() override;
+	virtual void DrawContextMenu() override;
 
 private:
 	template <typename Component>
@@ -48,6 +49,9 @@ private:
 
 		return snapshot;
 	}
+
+	void DeleteSelectedEntity();
+	void CreateNewEntity();
 
 	ECS& mECS;
 

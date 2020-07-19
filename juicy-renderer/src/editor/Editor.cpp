@@ -5,17 +5,18 @@
 #include "editor/DiffUtil.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
-
-#include <iostream>
+#include "world/Scene.h"
 
 namespace JR {
 
 using namespace Components;
 
-Editor::Editor(ECS& ecs)
-    : mECS(ecs)
+Editor::Editor(Scene& scene, ECS& ecs)
+    : mScene(scene)
+    , mECS(ecs)
     , mInspector(ecs)
-    , mHierarchy(ecs) {
+    , mHierarchy(ecs)
+	, mViewport(scene.mBackgroundColor) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
@@ -150,7 +151,8 @@ void Editor::DrawMenuBar() {
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Create Entity", "Ctrl + Shift + N")) {
-				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_N, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL | GLFW_MOD_SHIFT});
+				window.SimulateKeyEvent(
+				    EventKey{.key = GLFW_KEY_N, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL | GLFW_MOD_SHIFT});
 			}
 			if (ImGui::MenuItem("Delete Entity", "Del")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_DELETE, .action = GLFW_PRESS});

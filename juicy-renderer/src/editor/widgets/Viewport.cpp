@@ -30,4 +30,11 @@ void Viewport::Draw() {
 	ImGui::Image(renderTarget, imageSize);
 }
 
+void Viewport::DrawContextMenu() {
+	if (ImGui::BeginPopupContextItem("VIEWPORT_CONTEXT_MENU")) {
+		ImGui::ColorEdit3("Background", &mBackgroundColor.r);
+		ImGui::EndPopup();
+	}
+}
+
 }  // namespace JR::Widgets

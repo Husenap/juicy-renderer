@@ -11,17 +11,10 @@ Hierarchy::Hierarchy(ECS& ecs)
     , mECS(ecs) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (e.key == GLFW_KEY_N && e.mods == (GLFW_MOD_CONTROL | GLFW_MOD_SHIFT)) {
-			auto entity = mECS.create();
-			mECS.emplace<Components::Identification>(entity);
-			mECS.emplace<Components::Transform>(entity);
-
-			MM::Get<TransactionManager>().AddEntity(entity, "Added Entity", CreateEntitySnapshot(entity));
+			CreateNewEntity();
 		}
 		if (e.key == GLFW_KEY_DELETE) {
-			auto selectedEntity = EditorUtil::GetSelectedEntity();
-			if (selectedEntity) {
-				MM::Get<TransactionManager>().RemoveEntity(*selectedEntity, "Removed Entity", CreateEntitySnapshot(*selectedEntity));
-			}
+			DeleteSelectedEntity();
 		}
 	});
 }
@@ -52,6 +45,35 @@ void Hierarchy::Draw() {
 			ImGui::TreePop();
 		}
 	}
+}
+
+void Hierarchy::DrawContextMenu() {
+	if (ImGui::BeginPopupContextItem("HIERARCHY_CONTEXT_MENU")) {
+		if (ImGui::Selectable("Create Entity")) {
+			CreateNewEntity();
+		}
+		if (ImGui::Selectable("Delete Entity")) {
+			DeleteSelectedEntity();
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void Hierarchy::DeleteSelectedEntity() {
+	auto selectedEntity = EditorUtil::GetSelectedEntity();
+	if (selectedEntity) {
+		MM::Get<TransactionManager>().RemoveEntity(
+		    *selectedEntity, "Removed Entity", CreateEntitySnapshot(*selectedEntity));
+	}
+}
+
+void Hierarchy::CreateNewEntity() {
+	auto entity = mECS.create();
+	mECS.emplace<Components::Identification>(entity);
+	mECS.emplace<Components::Transform>(entity);
+
+	MM::Get<TransactionManager>().AddEntity(entity, "Added Entity", CreateEntitySnapshot(entity));
 }
 
 }  // namespace JR::Widgets

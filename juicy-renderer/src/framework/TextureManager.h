@@ -10,6 +10,7 @@ public:
 	const Texture& GetDefaultTexture();
 
 private:
+
 	void ValidateDefaultTexture();
 
 	Texture mDefaultTexture;
