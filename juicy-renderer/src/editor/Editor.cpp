@@ -5,17 +5,18 @@
 #include "editor/DiffUtil.h"
 #include "framework/Framework.h"
 #include "framework/Window.h"
-
-#include <iostream>
+#include "world/Scene.h"
 
 namespace JR {
 
 using namespace Components;
 
-Editor::Editor(ECS& ecs)
-    : mECS(ecs)
+Editor::Editor(Scene& scene, ECS& ecs)
+    : mScene(scene)
+    , mECS(ecs)
     , mInspector(ecs)
-    , mHierarchy(ecs) {
+    , mHierarchy(ecs)
+	, mViewport(scene.mBackgroundColor) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
@@ -23,14 +24,60 @@ Editor::Editor(ECS& ecs)
 		HandleKeyPress(e);
 	});
 
-	mTransactionToken = MM::Get<TransactionManager>().Subscribe<EventTransaction>([&](const EventTransaction& message) {
-		auto it = mTransactionHandlers.find(message.componentId);
-		if (it == mTransactionHandlers.end()) {
-			LOG_ERROR("Failed to find transaction handler for component with id: %d!", message.componentId);
+	auto& transactionManager = MM::Get<TransactionManager>();
+
+	mTransactionToken =
+	    transactionManager.Subscribe<EventComponentTransaction>([&](const EventComponentTransaction& message) {
+		    auto it = mTransactionHandlers.find(message.componentId);
+		    if (it == mTransactionHandlers.end()) {
+			    LOG_ERROR("Failed to find transaction handler for component with id: {}!", message.componentId);
+			    return;
+		    }
+
+		    it->second(message);
+	    });
+
+	mAddComponentToken = transactionManager.Subscribe<EventAddComponent>([&](const EventAddComponent& message) {
+		auto it = mAddComponentHandlers.find(message.componentId);
+		if (it == mAddComponentHandlers.end()) {
+			LOG_ERROR("Failed to find add component handler for component with id: {}!", message.componentId);
 			return;
 		}
 
 		it->second(message);
+	});
+
+	mRemoveComponentToken =
+	    transactionManager.Subscribe<EventRemoveComponent>([&](const EventRemoveComponent& message) {
+		    auto it = mRemoveComponentHandlers.find(message.componentId);
+		    if (it == mRemoveComponentHandlers.end()) {
+			    LOG_ERROR("Failed to find remove component handler for component with id: {}!", message.componentId);
+			    return;
+		    }
+
+		    it->second(message);
+	    });
+
+	mAddEntityToken = transactionManager.Subscribe<EventAddEntity>([&](const EventAddEntity& message) {
+		if (!mECS.valid(message.entity)) {
+			mECS.create(message.entity);
+		}
+
+		for (auto& [componentId, data] : message.componentData) {
+			auto it = mAddComponentHandlers.find(componentId);
+			if (it != mAddComponentHandlers.end()) {
+				it->second(EventAddComponent{.data = data, .entity = message.entity, .componentId = componentId});
+			}
+		}
+
+		EditorUtil::SelectEntity(message.entity);
+	});
+
+	mRemoveEntityToken = transactionManager.Subscribe<EventRemoveEntity>([&](const EventRemoveEntity& message) {
+		if (mECS.valid(message.entity)) {
+			mECS.destroy(message.entity);
+		}
+		EditorUtil::SelectEntity();
 	});
 }
 
@@ -103,9 +150,14 @@ void Editor::DrawMenuBar() {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_Y, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
 			ImGui::Separator();
+			if (ImGui::MenuItem("Create Entity", "Ctrl + Shift + N")) {
+				window.SimulateKeyEvent(
+				    EventKey{.key = GLFW_KEY_N, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL | GLFW_MOD_SHIFT});
+			}
 			if (ImGui::MenuItem("Delete Entity", "Del")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_DELETE, .action = GLFW_PRESS});
 			}
+
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Window")) {
@@ -127,6 +179,7 @@ void Editor::DrawMenuBar() {
 			if (ImGui::MenuItem("Fullscreen", "F11")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_F11, .action = GLFW_PRESS});
 			}
+
 			ImGui::EndMenu();
 		}
 	}

@@ -15,7 +15,7 @@ bool ShaderReflection::Reflect(ComPtr<ID3DBlob> blob) {
 }
 
 void ShaderReflection::ProcessInputParameters(std::function<void(D3D11_SIGNATURE_PARAMETER_DESC)> visitor) {
-	for (int i = 0; i < mShaderDesc.InputParameters; ++i) {
+	for (UINT i = 0; i < mShaderDesc.InputParameters; ++i) {
 		D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
 		mReflection->GetInputParameterDesc(i, &paramDesc);
 
@@ -24,7 +24,7 @@ void ShaderReflection::ProcessInputParameters(std::function<void(D3D11_SIGNATURE
 }
 
 void ShaderReflection::ProcessBoundResources(std::function<void(D3D11_SHADER_INPUT_BIND_DESC)> visitor) {
-	for (int i = 0; i < mShaderDesc.BoundResources; ++i) {
+	for (UINT i = 0; i < mShaderDesc.BoundResources; ++i) {
 		D3D11_SHADER_INPUT_BIND_DESC resourceDesc;
 		mReflection->GetResourceBindingDesc(i, &resourceDesc);
 

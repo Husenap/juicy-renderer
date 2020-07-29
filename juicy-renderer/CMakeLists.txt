@@ -44,6 +44,8 @@ set(src_editor
 )
 
 set(src_components
+    "src/components/ComponentTypeId.h"
+    "src/components/ComponentTypeId.cpp"
     "src/components/Identification.h"
     "src/components/Transform.h"
     "src/components/Sprite.h"
@@ -100,12 +102,24 @@ source_group("src" FILES "src/main.cpp")
 
 target_precompile_headers(${target_name} PUBLIC ${src_precompiled})
 
-target_link_libraries(${target_name} juicy-fd d3d11 d3dcompiler dxgi CONAN_PKG::glfw CONAN_PKG::stb CONAN_PKG::glm CONAN_PKG::entt imgui)
+target_link_libraries(${target_name}
+    juicy-fd
+    d3d11
+    d3dcompiler
+    dxgi
+    CONAN_PKG::glfw
+    CONAN_PKG::stb
+    CONAN_PKG::glm
+    CONAN_PKG::entt
+    CONAN_PKG::fmt
+    imgui
+    compiler-warnings)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set_target_properties(${target_name} PROPERTIES FOLDER ${PROJECT_NAME})
 set_target_properties(${target_name} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
+set_target_properties(${target_name} PROPERTIES LINK_FLAGS "/ignore:4099")
 
 # Tests
 add_executable(${target_name}_test "test/test.cpp")
@@ -113,5 +127,6 @@ add_executable(${target_name}_test "test/test.cpp")
 target_link_libraries(${target_name}_test CONAN_PKG::gtest)
 
 set_target_properties(${target_name}_test PROPERTIES FOLDER ${PROJECT_NAME})
+set_target_properties(${target_name}_test PROPERTIES LINK_FLAGS "/ignore:4099")
 
 gtest_discover_tests(${target_name}_test)

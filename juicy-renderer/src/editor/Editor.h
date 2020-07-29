@@ -10,14 +10,17 @@
 
 namespace JR {
 
+class Scene;
+
 class Editor {
 public:
-	Editor(ECS& ecs);
+	Editor(Scene& scene, ECS& ecs);
 
 	template <typename... Components>
 	void Init() {
 		(RegisterTransactionHandler<Components>(), ...);
 		mInspector.Init<Components...>();
+		mHierarchy.Init<Components...>();
 	}
 
 	void Update();
@@ -29,23 +32,61 @@ private:
 
 	template <typename Component>
 	void RegisterTransactionHandler() {
-		mTransactionHandlers[TypeId::Get<Component>()] = [&](const EventTransaction& transaction) {
-			if (!mECS.valid(transaction.entity)) {
-				LOG_ERROR("Tried to handle transaction for invalid entity: component: %s", typeid(Component).name());
+		static_assert(std::is_trivially_copyable_v<Component>, "Components need to be trivially copyable!");
+
+		auto componentId = Components::ComponentTypeId::Get<Component>();
+
+		mTransactionHandlers[componentId] = [&](const EventComponentTransaction& action) {
+			if (!mECS.valid(action.entity)) {
+				LOG_ERROR("Tried to handle transaction for invalid entity: component: {}", Component::GetDisplayName());
 				return;
 			}
 
-			if (!mECS.has<Component>(transaction.entity)) {
-				LOG_ERROR("Tried to handle transaction for entity that's missing a component: component: %s",
-				          typeid(Component).name());
+			if (!mECS.has<Component>(action.entity)) {
+				LOG_ERROR("Tried to handle transaction for entity that's missing a component: component: {}",
+				          Component::GetDisplayName());
 				return;
 			}
 
-			auto& component = mECS.get<Component>(transaction.entity);
-			std::memcpy(&component, transaction.data.data(), transaction.data.size());
+			auto& component = mECS.get<Component>(action.entity);
+			std::memcpy(&component, action.data.data(), action.data.size());
+		};
+
+		mAddComponentHandlers[componentId] = [&](const EventAddComponent& action) {
+			if (!mECS.valid(action.entity)) {
+				LOG_ERROR("Tried to add component on invalid entity: component: {}", Component::GetDisplayName());
+				return;
+			}
+
+			if (mECS.has<Component>(action.entity)) {
+				LOG_ERROR("Tried to add component on entity that already has component: {}",
+				          Component::GetDisplayName());
+				return;
+			}
+
+			Component& componentData = mECS.emplace<Component>(action.entity);
+			if (!action.data.empty()) {
+				std::memcpy(&componentData, action.data.data(), sizeof(componentData));
+			}
+		};
+
+		mRemoveComponentHandlers[componentId] = [&](const EventRemoveComponent& action) {
+			if (!mECS.valid(action.entity)) {
+				LOG_ERROR("Tried to remove component from invalid entity: component: {}", Component::GetDisplayName());
+				return;
+			}
+
+			if (!mECS.has<Component>(action.entity)) {
+				LOG_ERROR("Tried to remove component from entity that's missing that component: {}",
+				          Component::GetDisplayName());
+				return;
+			}
+
+			mECS.remove<Component>(action.entity);
 		};
 	}
 
+	Scene& mScene;
 	ECS& mECS;
 
 	ProjectManager mProjectManager;
@@ -53,9 +94,15 @@ private:
 	bool mShowEditor = true;
 
 	MessageToken mKeyPressToken;
-	MessageToken mTransactionToken;
 
-	std::map<std::uint32_t, std::function<void(const EventTransaction&)>> mTransactionHandlers;
+	std::map<uint32_t, std::function<void(const EventComponentTransaction&)>> mTransactionHandlers;
+	MessageToken mTransactionToken;
+	std::map<uint32_t, std::function<void(const EventAddComponent&)>> mAddComponentHandlers;
+	MessageToken mAddComponentToken;
+	std::map<uint32_t, std::function<void(const EventRemoveComponent&)>> mRemoveComponentHandlers;
+	MessageToken mRemoveComponentToken;
+	MessageToken mAddEntityToken;
+	MessageToken mRemoveEntityToken;
 
 	Widgets::ContentBrowser mContentBrowser;
 	Widgets::Hierarchy mHierarchy;

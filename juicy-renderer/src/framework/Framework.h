@@ -30,8 +30,10 @@ public:
 
 	RenderManager& Renderer() { return mRendererManager; }
 
-	auto GetDepthBuffer() const { return mBackBuffer; }
+	auto& GetDepthBuffer() const { return mBackBuffer; }
 	//auto GetDepthStencil() const { return mDepthStencil; }
+
+	bool IsPaused() const { return mIsPaused; }
 
 private:
 	IDXGIAdapter* FindBestAdapter();
@@ -50,6 +52,8 @@ private:
 	MessageToken mResizeToken;
 
 	RenderManager mRendererManager;
+
+	bool mIsPaused = false;
 };
 
 }  // namespace JR

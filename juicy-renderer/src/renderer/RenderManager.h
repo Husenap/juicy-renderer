@@ -51,6 +51,8 @@ private:
 		glm::vec2 uv;
 	};
 	Buffer mScreenTriangle;
+
+	glm::vec4 mClearColor;
 };
 
 }  // namespace JR

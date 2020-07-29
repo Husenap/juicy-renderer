@@ -42,15 +42,21 @@ bool App::Start() {
 }
 
 bool App::Run() {
+	auto& framework = MM::Get<Framework>();
+
 	while (!MM::Get<Window>().ShouldClose()) {
 		glfwPollEvents();
 
-		MM::Get<Framework>().BeginFrame();
-		mScene->Update(static_cast<float>(glfwGetTime()));
-		MM::Get<Framework>().Render();
-		MM::Get<Framework>().EndFrame();
+		if (!framework.IsPaused()) {
+			MM::Get<Framework>().BeginFrame();
+			mScene->Update(static_cast<float>(glfwGetTime()));
+			MM::Get<Framework>().Render();
+			MM::Get<Framework>().EndFrame();
 
-		MM::Get<FileWatcher>().FlushChanges();
+			MM::Get<FileWatcher>().FlushChanges();
+		} else {
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
 
 		std::this_thread::yield();
 	}

@@ -45,24 +45,24 @@ void ContentBrowser::DrawTree() {
 	DrawTreeRecursive(contentPath);
 }
 
-void ContentBrowser::DrawTreeRecursive(std::filesystem::path path) {
+void ContentBrowser::DrawTreeRecursive(std::filesystem::path currentPath) {
 	const ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
 	                                     ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth;
 
 	ImGuiTreeNodeFlags nodeFlags = baseFlags;
 
-	if (mSelectedDirectory && *mSelectedDirectory == path) {
+	if (mSelectedDirectory && *mSelectedDirectory == currentPath) {
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
 	}
 
-	bool nodeOpen = ImGui::TreeNodeEx(path.filename().string().c_str(), nodeFlags);
+	bool nodeOpen = ImGui::TreeNodeEx(currentPath.filename().string().c_str(), nodeFlags);
 
 	if (ImGui::IsItemClicked()) {
-		mSelectedDirectory = path;
+		mSelectedDirectory = currentPath;
 	}
 
 	if (nodeOpen) {
-		for (auto p : std::filesystem::directory_iterator(path)) {
+		for (auto p : std::filesystem::directory_iterator(currentPath)) {
 			auto path = p.path();
 			if (!std::filesystem::is_directory(path)) {
 				continue;
@@ -129,7 +129,7 @@ void ContentBrowser::DrawContent() {
 
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::SetDragDropPayload("TEXTURE_ID", &fileId, sizeof(fileId));
-				auto cursorPos = ImGui::GetCursorPos();
+				cursorPos = ImGui::GetCursorPos();
 				auto thumbnailSize = ImVec2(50.f, 50.f);
 				ImGui::Image(defaultTexture, thumbnailSize);
 				ImGui::SetCursorPos(cursorPos);

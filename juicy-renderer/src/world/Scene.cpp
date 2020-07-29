@@ -10,9 +10,10 @@ namespace JR {
 using namespace Components;
 
 Scene::Scene()
-    : mEditor(mECS) {
+    : mEditor(*this, mECS) {
 	mEditor.Init<Identification, Transform, Sprite>();
 
+	/*
 	for (auto i = 0; i < 10; ++i) {
 		auto entity = mECS.create();
 		mECS.emplace<Identification>(entity, "entity_" + std::to_string(i));
@@ -44,10 +45,13 @@ Scene::Scene()
 			                     StringId::FromPath("pillar_back.png"));
 			break;
 		default:
-			mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
+			//mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
 			break;
 		}
 	}
+	*/
+
+	mBackgroundColor = {0.f, 0.f, 0.f, 1.f};
 }
 
 void Scene::Update(float time) {
@@ -56,6 +60,9 @@ void Scene::Update(float time) {
 	mLastTime    = mCurrentTime;
 
 	auto& renderer  = MM::Get<Framework>().Renderer();
+
+	renderer.Submit(RCClearColor{.color = mBackgroundColor});
+
 	auto spriteView = mECS.view<Transform, Sprite>();
 	for (auto entity : spriteView) {
 		auto& transform = spriteView.get<Transform>(entity);

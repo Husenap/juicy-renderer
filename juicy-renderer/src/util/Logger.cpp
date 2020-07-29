@@ -1,7 +1,5 @@
 #include "Logger.h"
 
-#include <cstdarg>
-
 namespace JR {
 
 Logger::Logger() {
@@ -23,11 +21,10 @@ Logger::Logger() {
 	HWND hConsole = GetConsoleWindow();
 	SetConsoleTitle("Juicy Console");
 	MoveWindow(hConsole, 0, 0, 1250, 600, true);
-
-	mBuffer.resize(8192);
 }
 
-void Logger::Log(LogLevel level, const char* file, uint32_t line, const char* function, const char* format, ...) {
+void Logger::InternalLog(
+    LogLevel level, const char* file, uint32_t line, const char* function, const std::string& text) {
 	if (level < mLevel) {
 		return;
 	}
@@ -42,11 +39,6 @@ void Logger::Log(LogLevel level, const char* file, uint32_t line, const char* fu
 		functionName = functionName.substr(pos + 1);
 	}
 
-	va_list args;
-	va_start(args, format);
-	vsprintf_s(mBuffer.data(), mBuffer.size(), format, args);
-	va_end(args);
-
 	if (level >= LogLevel::Error) {
 		HWND hConsole = GetConsoleWindow();
 		FlashWindow(hConsole, false);
@@ -56,27 +48,27 @@ void Logger::Log(LogLevel level, const char* file, uint32_t line, const char* fu
 
 	SetConsoleTextAttribute(console, DarkIdx);
 	printf("[");
-	SetConsoleTextAttribute(console, static_cast<WORD>(level)+1);
+	SetConsoleTextAttribute(console, static_cast<WORD>(level) + 1);
 	printf("%s", GetLevelString(level));
 	SetConsoleTextAttribute(console, DarkIdx);
 	printf("]: %s:%d:%s: ", filename.c_str(), line, functionName.c_str());
 	SetConsoleTextAttribute(console, DebugIdx);
-	printf("%s\n", mBuffer.data());
+	printf("%s\n", text.c_str());
 
-	if (level == LogLevel::Fatal){
-		throw std::runtime_error(mBuffer.data());
+	if (level == LogLevel::Fatal) {
+		throw std::runtime_error(text);
 	}
 }
 
 const char* Logger::GetLevelString(LogLevel level) {
 	constexpr static std::array<const char*, static_cast<std::size_t>(LogLevel::Count)> Strings{
-		"DEBUG",
-		"INFO",
-		"WARNING",
-		"ERROR",
-		"FATAL",
+	    "DEBUG",
+	    "INFO",
+	    "WARNING",
+	    "ERROR",
+	    "FATAL",
 	};
-	
+
 	return Strings[static_cast<std::size_t>(level)];
 }
 

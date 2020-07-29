@@ -7,11 +7,14 @@
 namespace JR::Components {
 
 struct Sprite {
-	glm::vec4 uv;
-	glm::vec4 tint;
-	float blendMode;
+	glm::vec4 uv    = {0.f, 0.f, 1.f, 1.f};
+	glm::vec4 tint  = {1.f, 1.f, 1.f, 1.f};
+	float blendMode = 1.f;
 	StringId texture;
 	StringId backTexture;
+
+	[[nodiscard]] constexpr static const char* GetDisplayName() { return "Sprite"; }
+	[[nodiscard]] constexpr static bool IsUserComponent() { return true; }
 };
 
 static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label) {
@@ -22,12 +25,12 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 		texturePath = contentManager.GetRelativePath(*path).generic_string();
 	}
 
-	auto& texture = MM::Get<TextureManager>().GetTexture(textureId);
+	auto& texture        = MM::Get<TextureManager>().GetTexture(textureId);
 	auto& defaultTexture = MM::Get<TextureManager>().GetDefaultTexture();
 
 	ImGui::BeginGroup();
 
-	auto cursorPos = ImGui::GetCursorPos();
+	auto cursorPos     = ImGui::GetCursorPos();
 	auto thumbnailSize = ImVec2(100.f, 100.f);
 	ImGui::Image(defaultTexture, thumbnailSize);
 	ImGui::SetCursorPos(cursorPos);
@@ -61,28 +64,22 @@ static void SetTextureId(Sprite& sprite, StringId& textureId, const char* label)
 }
 
 static void View(Sprite& sprite) {
-	if (ImGui::CollapsingHeader("Sprite")) {
-		ImGui::DragFloat4("UV", &sprite.uv.x, 0.05f);
-		DiffUtil::HandleTransaction(sprite, "Sprite UV");
+	ImGui::DragFloat4("UV", &sprite.uv.x, 0.05f);
+	DiffUtil::HandleTransaction(sprite, "Sprite UV");
 
-		ImGui::Separator();
+	ImGui::ColorEdit4("Tint", &sprite.tint.x);
+	DiffUtil::HandleTransaction(sprite, "Sprite Tint");
 
-		ImGui::ColorEdit4("Tint", &sprite.tint.x);
-		DiffUtil::HandleTransaction(sprite, "Sprite Tint");
+	ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.2f - Alpha Blend");
+	DiffUtil::HandleTransaction(sprite, "Sprite Blend Mode");
 
-		ImGui::Separator();
+	ImGui::Separator();
 
-		ImGui::SliderFloat("Blend Mode", &sprite.blendMode, 0.0f, 1.0f, "Additive - %.3f - Alpha Blend");
-		DiffUtil::HandleTransaction(sprite, "Sprite Blend Mode");
+	SetTextureId(sprite, sprite.texture, "Sprite Texture");
 
-		ImGui::Separator();
+	ImGui::Separator();
 
-		SetTextureId(sprite, sprite.texture, "Sprite Texture");
-
-		ImGui::Separator();
-
-		SetTextureId(sprite, sprite.backTexture, "Sprite Back Texture");
-	}
+	SetTextureId(sprite, sprite.backTexture, "Sprite Back Texture");
 }
 
 }  // namespace JR::Components

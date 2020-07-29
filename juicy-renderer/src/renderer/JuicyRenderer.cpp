@@ -10,7 +10,7 @@ bool JuicyRenderer::Init() {
 		return false;
 	}
 
-	if (!mSpriteBuffer.Create(CD3D11_BUFFER_DESC(sizeof(mSprites[0]) * mSprites.max_size(),
+	if (!mSpriteBuffer.Create(CD3D11_BUFFER_DESC(static_cast<UINT>(sizeof(mSprites[0]) * mSprites.max_size()),
 	                                             D3D11_BIND_VERTEX_BUFFER,
 	                                             D3D11_USAGE_DYNAMIC,
 	                                             D3D11_CPU_ACCESS_WRITE))) {
