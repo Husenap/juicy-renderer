@@ -60,6 +60,7 @@ void RenderManager::Render() {
 	for (auto& renderCommand : mRenderCommands) {
 		std::visit(overloaded{
 		               [&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); },
+		               [&](RCLight light) { mJuicyRenderer.Submit(light); },
 		               [&](RCClearColor clearColor) { mClearColor = clearColor.color; },
 		           },
 		           renderCommand);

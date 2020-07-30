@@ -14,7 +14,8 @@ public:
 	bool Init();
 	void Render();
 
-	void Submit(RCSprite renderCommand);
+	void Submit(RCSprite sprite);
+	void Submit(RCLight light);
 
 private:
 	void RenderSprite(const RCSprite& sprite);
@@ -32,10 +33,19 @@ private:
 	} mConstantBufferData;
 	Buffer mConstantBuffer;
 
+	struct LightBufferData {
+		RCLight Lights[64];
+		int NumLights;
+		float _padding[3];
+	} mLightBufferData;
+	Buffer mLightBuffer;
+
 	BlendState mPremultipliedBlendState;
 	SamplerState mSamplerState;
 
 	std::vector<RCSprite> mSpriteRenderCommands;
+	std::vector<RCLight> mLightRenderCommands;
+	void UpdateLightBuffer();
 };
 
 }  // namespace JR

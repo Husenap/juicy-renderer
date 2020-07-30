@@ -16,7 +16,7 @@ Editor::Editor(Scene& scene, ECS& ecs)
     , mECS(ecs)
     , mInspector(ecs)
     , mHierarchy(ecs)
-	, mViewport(scene.mBackgroundColor) {
+    , mViewport(scene.mBackgroundColor) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
@@ -95,10 +95,12 @@ void Editor::Update() {
 
 	DrawMenuBar();
 
+#ifdef _DEBUG
 	static bool demo = true;
 	if (demo) {
 		ImGui::ShowDemoWindow(&demo);
 	}
+#endif
 
 	mInspector.Update();
 	mHistory.Update();

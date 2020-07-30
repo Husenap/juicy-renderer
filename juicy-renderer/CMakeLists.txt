@@ -49,6 +49,7 @@ set(src_components
     "src/components/Identification.h"
     "src/components/Transform.h"
     "src/components/Sprite.h"
+    "src/components/Light.h"
     "src/components/Components.h")
 
 set(src_renderer

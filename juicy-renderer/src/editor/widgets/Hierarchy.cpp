@@ -31,7 +31,7 @@ void Hierarchy::Draw() {
 		auto& identification = view.get<Components::Identification>(entity);
 
 		ImGuiTreeNodeFlags nodeFlags = baseFlags;
-		if (selectedEntity && selectedEntity == entity) {
+		if (selectedEntity == entity) {
 			nodeFlags |= ImGuiTreeNodeFlags_Selected;
 		}
 
@@ -62,9 +62,9 @@ void Hierarchy::DrawContextMenu() {
 
 void Hierarchy::DeleteSelectedEntity() {
 	auto selectedEntity = EditorUtil::GetSelectedEntity();
-	if (selectedEntity) {
+	if (selectedEntity != entt::null) {
 		MM::Get<TransactionManager>().RemoveEntity(
-		    *selectedEntity, "Removed Entity", CreateEntitySnapshot(*selectedEntity));
+		    selectedEntity, "Removed Entity", CreateEntitySnapshot(selectedEntity));
 	}
 }
 

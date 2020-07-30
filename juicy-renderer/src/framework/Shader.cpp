@@ -122,7 +122,7 @@ void CreateResourceBindings(ComPtr<ID3DBlob> psBlob) {
 	shaderReflection.Reflect(psBlob);
 
 	shaderReflection.ProcessBoundResources(
-	    [](auto resourceDesc) { LOG_INFO("Shader Resource: {}", resourceDesc.Name); });
+	    [](auto resourceDesc) { resourceDesc; LOG_INFO("Shader Resource: {}", resourceDesc.Name); });
 }
 
 bool Shader::Load(std::underlying_type_t<ShaderType>  shaderType, const std::string& filepath) {

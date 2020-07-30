@@ -4,3 +4,4 @@
 #include "Identification.h"
 #include "Sprite.h"
 #include "Transform.h"
+#include "Light.h"

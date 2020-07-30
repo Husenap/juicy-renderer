@@ -11,55 +11,19 @@ using namespace Components;
 
 Scene::Scene()
     : mEditor(*this, mECS) {
-	mEditor.Init<Identification, Transform, Sprite>();
-
-	/*
-	for (auto i = 0; i < 10; ++i) {
-		auto entity = mECS.create();
-		mECS.emplace<Identification>(entity, "entity_" + std::to_string(i));
-		mECS.emplace<Transform>(entity, glm::vec3(-2 + (i % 3)*10, (i / 3)*10, 150.f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.f));
-
-		switch (i % 4) {
-		case 0:
-			mECS.emplace<Sprite>(entity,
-			                     glm::vec4(0.f, 0.f, 1.f, 1.f),
-			                     glm::vec4(1.f),
-			                     1.f,
-			                     StringId::FromPath("groundprops.png"),
-			                     StringId::FromPath("groundprops_back.png"));
-			break;
-		case 1:
-			mECS.emplace<Sprite>(entity,
-			                     glm::vec4(0.f, 0.f, 1.f, 1.f),
-			                     glm::vec4(1.f),
-			                     1.f,
-			                     StringId::FromPath("groundsquare.png"),
-			                     StringId::FromPath("groundsquare_back.png"));
-			break;
-		case 2:
-			mECS.emplace<Sprite>(entity,
-			                     glm::vec4(0.f, 0.f, 1.f, 1.f),
-			                     glm::vec4(1.f),
-			                     1.f,
-			                     StringId::FromPath("pillar.png"),
-			                     StringId::FromPath("pillar_back.png"));
-			break;
-		default:
-			//mECS.emplace<Sprite>(entity, glm::vec4(0.f, 0.f, 1.f, 1.f), glm::vec4(1.f), 1.f);
-			break;
-		}
-	}
-	*/
+	mEditor.Init<Identification, Transform, Sprite, Light>();
 
 	mBackgroundColor = {0.f, 0.f, 0.f, 1.f};
 }
 
 void Scene::Update(float time) {
+	mEditor.Update();
+
 	mCurrentTime = time;
 	mDeltaTime   = mCurrentTime - mLastTime;
 	mLastTime    = mCurrentTime;
 
-	auto& renderer  = MM::Get<Framework>().Renderer();
+	auto& renderer = MM::Get<Framework>().Renderer();
 
 	renderer.Submit(RCClearColor{.color = mBackgroundColor});
 
@@ -76,7 +40,19 @@ void Scene::Update(float time) {
 		                         .backTexture = sprite.backTexture});
 	}
 
-	mEditor.Update();
+	auto lightView = mECS.view<Transform, Light>();
+	for (auto entity : lightView) {
+		auto& transform = lightView.get<Transform>(entity);
+		auto& light     = lightView.get<Light>(entity);
+
+		renderer.Submit(RCLight{
+		    .position    = transform.position,
+		    .intensity   = light.intensity,
+		    .size        = light.size,
+		    .color       = light.color,
+		    .isBackLight = static_cast<float>(light.direction == Components::LightDirection::Back),
+		});
+	}
 }
 
 }  // namespace JR
