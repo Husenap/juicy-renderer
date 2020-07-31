@@ -23,6 +23,11 @@ struct RCLight {
 	float isBackLight;
 };
 
-using RenderCommand = std::variant<RCSprite, RCClearColor, RCLight>;
+struct RCScreenshot {
+	float time;
+	std::filesystem::path outputPath;
+};
+
+using RenderCommand = std::variant<RCSprite, RCClearColor, RCLight, RCScreenshot>;
 
 }  // namespace JR

@@ -27,8 +27,9 @@ struct PixelOutput {
 cbuffer BufferData : register(b0) {
     float4x4 ProjectionMatrix;
     float4 Resolution;
-    float2 Time;
     float2 Stretch;
+    float Time;
+    float _BufferDataPadding[1];
 }
 
 struct LightData{
@@ -41,5 +42,5 @@ struct LightData{
 cbuffer LightBufferData : register(b1) {
     LightData Lights[64];
     int NumLights;
-    float _padding[3];
+    float _LightBufferDataPadding[3];
 }

@@ -85,12 +85,15 @@ void JuicyRenderer::Submit(RCLight light) {
 	mLightRenderCommands.push_back(light);
 }
 
+void JuicyRenderer::SetTime(float time) {
+	mConstantBufferData.Time = time;
+}
+
 void JuicyRenderer::UpdateConstantBuffer(const Texture& texture) {
 	auto size = MM::Get<Window>().GetSize();
 
 	mConstantBufferData.ProjectionMatrix = glm::perspectiveFovLH(glm::radians(80.f), size.x, size.y, 0.1f, 1000.f);
 	mConstantBufferData.Resolution       = glm::vec4(size.x, size.y, size.x / size.y, size.y / size.x);
-	mConstantBufferData.Time             = glm::vec2((float)glfwGetTime());
 	mConstantBufferData.Stretch          = texture.GetStretch();
 
 	mConstantBuffer.SetData(mConstantBufferData);

@@ -102,6 +102,7 @@ void Editor::Update() {
 	}
 #endif
 
+	mExporterManager.Update();
 	mInspector.Update();
 	mHistory.Update();
 	mHierarchy.Update();
@@ -141,6 +142,10 @@ void Editor::DrawMenuBar() {
 			}
 			if (ImGui::MenuItem("Open Project", "Ctrl + O")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_O, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Export Sequence", "Ctrl + E")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_E, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
 			ImGui::EndMenu();
 		}

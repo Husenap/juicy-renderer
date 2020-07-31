@@ -34,6 +34,8 @@ set(src_editor
     "src/editor/EditorUtil.h"
     "src/editor/Editor.h"
     "src/editor/Editor.cpp"
+    "src/editor/ExporterManager.h"
+    "src/editor/ExporterManager.cpp"
     "src/editor/ContentManager.h"
     "src/editor/ContentManager.cpp"
     "src/editor/ProjectManager.h"

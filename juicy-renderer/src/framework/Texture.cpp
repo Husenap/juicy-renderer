@@ -47,6 +47,13 @@ bool Texture::Create(const TextureCreateDesc& createDesc) {
 	    .MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS,
 	};
 
+	if (createDesc.textureType == TextureType::Staging) {
+		textureDesc.Usage = D3D11_USAGE_STAGING;
+		textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+		textureDesc.BindFlags = 0;
+	    textureDesc.MiscFlags = 0;
+	}
+
 	HRESULT hr = MM::Get<Framework>().Device()->CreateTexture2D(&textureDesc, nullptr, &mTexture);
 	if (FAILED(hr)) {
 		LOG_ERROR("Failed to create texture!");
@@ -77,14 +84,16 @@ bool Texture::Create(const TextureCreateDesc& createDesc) {
 		    mTexture.Get(), 0, NULL, createDesc.data, createDesc.width * sizeof(uint8_t) * 4, 0);
 	}
 
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{.Format        = createDesc.format,
-	                                        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
-	                                        .Texture2D     = {
-                                                .MostDetailedMip = 0,
-                                                .MipLevels       = (UINT)-1,
-                                            }};
+	if (textureDesc.BindFlags & D3D11_BIND_SHADER_RESOURCE) {
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{.Format        = createDesc.format,
+		                                        .ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
+		                                        .Texture2D     = {
+                                                    .MostDetailedMip = 0,
+                                                    .MipLevels       = (UINT)-1,
+                                                }};
 
-	MM::Get<Framework>().Device()->CreateShaderResourceView(mTexture.Get(), &srvDesc, &mShaderResourceView);
+		MM::Get<Framework>().Device()->CreateShaderResourceView(mTexture.Get(), &srvDesc, &mShaderResourceView);
+	}
 
 	if (mTextureType == TextureType::RenderTarget) {
 		MM::Get<Framework>().Device()->CreateRenderTargetView(mTexture.Get(), nullptr, &mRenderTargetView);

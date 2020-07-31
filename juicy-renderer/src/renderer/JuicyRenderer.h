@@ -17,9 +17,12 @@ public:
 	void Submit(RCSprite sprite);
 	void Submit(RCLight light);
 
+	void SetTime(float time);
+
 private:
 	void RenderSprite(const RCSprite& sprite);
 	void UpdateConstantBuffer(const Texture& texture);
+	void UpdateLightBuffer();
 
 	Shader mShader;
 	std::array<RCSprite, 2048> mSprites;
@@ -28,8 +31,9 @@ private:
 	struct ConstantBufferData {
 		glm::mat4 ProjectionMatrix;
 		glm::vec4 Resolution;
-		glm::vec2 Time;
 		glm::vec2 Stretch;
+		float Time;
+		float _padding[1];
 	} mConstantBufferData;
 	Buffer mConstantBuffer;
 
@@ -45,7 +49,6 @@ private:
 
 	std::vector<RCSprite> mSpriteRenderCommands;
 	std::vector<RCLight> mLightRenderCommands;
-	void UpdateLightBuffer();
 };
 
 }  // namespace JR

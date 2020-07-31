@@ -17,7 +17,7 @@ private:
 		return instance;
 	}
 
-	entt::entity mSelectedEntity{entt::null};
+	entt::entity mSelectedEntity = entt::null;
 };
 
 }  // namespace JR

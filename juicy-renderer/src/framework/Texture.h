@@ -7,6 +7,7 @@ public:
 	enum class TextureType {
 		ShaderResource,
 		RenderTarget,
+		Staging,
 	};
 	struct TextureCreateDesc {
 		uint32_t width;
@@ -31,6 +32,7 @@ public:
 
 	operator ImTextureID() const { return mShaderResourceView.Get(); }
 
+	ComPtr<ID3D11Texture2D> GetTexture2D() const { return mTexture; }
 	ComPtr<ID3D11RenderTargetView> GetRTV() const { return mRenderTargetView; }
 
 private:
