@@ -21,6 +21,9 @@ bool JuicyRenderer::Init() {
 	mConstantBuffer.Create(CD3D11_BUFFER_DESC(
 	    sizeof(ConstantBufferData), D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE));
 
+	mLightBuffer.Create(CD3D11_BUFFER_DESC(
+	    sizeof(LightBufferData), D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE));
+
 	if (!mPremultipliedBlendState.Create(
 	        D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA)) {
 		return false;
@@ -46,6 +49,7 @@ void JuicyRenderer::Render() {
 	}
 
 	mSpriteRenderCommands.clear();
+	mLightRenderCommands.clear();
 
 	mShader.Unbind();
 	mSamplerState.Unbind(0);
@@ -65,13 +69,24 @@ void JuicyRenderer::RenderSprite(const RCSprite& sprite) {
 	UpdateConstantBuffer(texture);
 	mConstantBuffer.Bind(0);
 
+	UpdateLightBuffer();
+	mLightBuffer.Bind(1);
+
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	context->Draw(1, 0);
 }
 
-void JuicyRenderer::Submit(RCSprite renderCommand) {
-	mSpriteRenderCommands.push_back(renderCommand);
+void JuicyRenderer::Submit(RCSprite sprite) {
+	mSpriteRenderCommands.push_back(sprite);
+}
+
+void JuicyRenderer::Submit(RCLight light) {
+	mLightRenderCommands.push_back(light);
+}
+
+void JuicyRenderer::SetTime(float time) {
+	mConstantBufferData.Time = time;
 }
 
 void JuicyRenderer::UpdateConstantBuffer(const Texture& texture) {
@@ -79,10 +94,19 @@ void JuicyRenderer::UpdateConstantBuffer(const Texture& texture) {
 
 	mConstantBufferData.ProjectionMatrix = glm::perspectiveFovLH(glm::radians(80.f), size.x, size.y, 0.1f, 1000.f);
 	mConstantBufferData.Resolution       = glm::vec4(size.x, size.y, size.x / size.y, size.y / size.x);
-	mConstantBufferData.Time             = glm::vec2((float)glfwGetTime());
 	mConstantBufferData.Stretch          = texture.GetStretch();
 
 	mConstantBuffer.SetData(mConstantBufferData);
+}
+
+void JuicyRenderer::UpdateLightBuffer() {
+	mLightBufferData.NumLights = std::min(static_cast<int>(mLightRenderCommands.size()), 64);
+
+	std::memcpy(mLightBufferData.Lights,
+	            mLightRenderCommands.data(),
+	            sizeof(mLightRenderCommands[0]) * mLightBufferData.NumLights);
+
+	mLightBuffer.SetData(mLightBufferData);
 }
 
 }  // namespace JR

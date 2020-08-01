@@ -1,6 +1,7 @@
 #pragma once
 
 #include "editor/DiffUtil.h"
+#include "editor/ExporterManager.h"
 #include "editor/ProjectManager.h"
 #include "widgets/ContentBrowser.h"
 #include "widgets/Hierarchy.h"
@@ -90,6 +91,7 @@ private:
 	ECS& mECS;
 
 	ProjectManager mProjectManager;
+	ExporterManager mExporterManager;
 
 	bool mShowEditor = true;
 

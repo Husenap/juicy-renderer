@@ -26,6 +26,8 @@ private:
 	void OnContentScale(glm::vec2 size);
 	void UpdateScales();
 
+	void SaveScreenshot();
+
 	D3D11_VIEWPORT mViewport;
 
 	JuicyRenderer mJuicyRenderer;
@@ -44,6 +46,7 @@ private:
 
 	SamplerState mSamplerState;
 	Texture mRenderTarget;
+	Texture mStagingRenderTarget;
 	Shader mCopyShader;
 
 	struct ScreenTriangleVertex {
@@ -53,6 +56,8 @@ private:
 	Buffer mScreenTriangle;
 
 	glm::vec4 mClearColor;
+
+	std::optional<RCScreenshot> mScreenShotCommand;
 };
 
 }  // namespace JR

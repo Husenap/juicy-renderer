@@ -34,6 +34,8 @@ set(src_editor
     "src/editor/EditorUtil.h"
     "src/editor/Editor.h"
     "src/editor/Editor.cpp"
+    "src/editor/ExporterManager.h"
+    "src/editor/ExporterManager.cpp"
     "src/editor/ContentManager.h"
     "src/editor/ContentManager.cpp"
     "src/editor/ProjectManager.h"
@@ -49,6 +51,7 @@ set(src_components
     "src/components/Identification.h"
     "src/components/Transform.h"
     "src/components/Sprite.h"
+    "src/components/Light.h"
     "src/components/Components.h")
 
 set(src_renderer

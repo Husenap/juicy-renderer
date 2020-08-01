@@ -7,10 +7,10 @@ namespace JR::Widgets {
 void Inspector::Draw() {
 	auto selectedEntity = EditorUtil::GetSelectedEntity();
 
-	if (selectedEntity) {
+	if (selectedEntity != entt::null) {
 		ImGui::PushItemWidth(-170.f);
 		for (auto& drawer : mComponentDrawers) {
-			drawer(*selectedEntity);
+			drawer(selectedEntity);
 		}
 		ImGui::PopItemWidth();
 
@@ -21,7 +21,7 @@ void Inspector::Draw() {
 				bool wasSelected = false;
 				ImGui::Selectable(listedComponent.componentName.c_str(), &wasSelected);
 				if (wasSelected) {
-					mComponentAdders[listedComponent.componentId](*selectedEntity);
+					mComponentAdders[listedComponent.componentId](selectedEntity);
 				}
 			}
 			ImGui::EndCombo();

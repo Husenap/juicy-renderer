@@ -16,7 +16,7 @@ Editor::Editor(Scene& scene, ECS& ecs)
     , mECS(ecs)
     , mInspector(ecs)
     , mHierarchy(ecs)
-	, mViewport(scene.mBackgroundColor) {
+    , mViewport(scene.mBackgroundColor) {
 	mKeyPressToken = MM::Get<Window>().Subscribe<EventKeyPress>([&](const auto& e) {
 		if (!mProjectManager.IsLoaded()) {
 			return;
@@ -95,11 +95,14 @@ void Editor::Update() {
 
 	DrawMenuBar();
 
+#ifdef _DEBUG
 	static bool demo = true;
 	if (demo) {
 		ImGui::ShowDemoWindow(&demo);
 	}
+#endif
 
+	mExporterManager.Update();
 	mInspector.Update();
 	mHistory.Update();
 	mHierarchy.Update();
@@ -139,6 +142,10 @@ void Editor::DrawMenuBar() {
 			}
 			if (ImGui::MenuItem("Open Project", "Ctrl + O")) {
 				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_O, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Export Sequence", "Ctrl + E")) {
+				window.SimulateKeyEvent(EventKey{.key = GLFW_KEY_E, .action = GLFW_PRESS, .mods = GLFW_MOD_CONTROL});
 			}
 			ImGui::EndMenu();
 		}

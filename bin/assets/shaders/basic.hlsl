@@ -35,6 +35,7 @@ void GSMain(point GeometryInput input[1], inout TriangleStream<PixelInput> outpu
     for(int i = 0; i < 4; ++i){
         vertex.position = input[0].position;
         vertex.position.xy += offset[i].xy * duv;
+        vertex.worldPosition = vertex.position;
         vertex.position = mul(ProjectionMatrix, vertex.position);
 
         vertex.uv = uv[i];
@@ -54,16 +55,24 @@ void PSMain(in PixelInput input, out PixelOutput output) {
     float4 back = BackTexture.Sample(DefaultSampler, input.uv);
     back.rgb = TO_LINEAR(back.rgb);
 
-    float3 frontLightColor = 0.03;
-    frontLightColor = 1.f;
+    float3 col = 0.f;
 
-    float3 backLightColor = float3(0.2, 1.0, 0.4);
-    backLightColor = 0.f;
+    for(int lightIndex = 0; lightIndex < NumLights; ++lightIndex){
+        LightData light = Lights[lightIndex];
 
-    float3 frontLight = color.rgb * frontLightColor;
-    float3 backLight = back.rgb * backLightColor;
+        float dist = length(light.position - input.worldPosition.xy);
 
-    float3 col = frontLight + backLight;
+        float attenuation = 1.f / (1.0f + pow(dist / light.size, 2.0f));
+
+        float t = Time + length(light.position);
+        float flicker = cos(light.flickerSpeed * 0.732f * t) * sin(light.flickerSpeed * 1.731f * t) * 0.5f + 0.5f;
+
+        col += saturate(attenuation) *
+                saturate(1.0f - flicker * light.flickerIntensity) *
+                light.intensity *
+                light.color *
+                lerp(color.rgb, back.rgb, light.isBackLight) * color.a;
+    }
 
     float4 finalColor = float4(col, color.a);
     finalColor *= input.tint;

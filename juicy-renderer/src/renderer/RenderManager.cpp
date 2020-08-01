@@ -60,7 +60,9 @@ void RenderManager::Render() {
 	for (auto& renderCommand : mRenderCommands) {
 		std::visit(overloaded{
 		               [&](RCSprite sprite) { mJuicyRenderer.Submit(sprite); },
+		               [&](RCLight light) { mJuicyRenderer.Submit(light); },
 		               [&](RCClearColor clearColor) { mClearColor = clearColor.color; },
+		               [&](RCScreenshot screenshot) { mScreenShotCommand = screenshot; },
 		           },
 		           renderCommand);
 	}
@@ -69,9 +71,16 @@ void RenderManager::Render() {
 	context->OMSetRenderTargets(1, mRenderTarget.GetRTV().GetAddressOf(), nullptr);
 	context->ClearRenderTargetView(mRenderTarget.GetRTV().Get(), &mClearColor.r);
 
+	if (mScreenShotCommand) {
+		mJuicyRenderer.SetTime(mScreenShotCommand->time);
+	} else {
+		mJuicyRenderer.SetTime(glfwGetTime());
+	}
 	mJuicyRenderer.Render();
 
 	CopyRenderTargetToBackBuffer();
+
+	SaveScreenshot();
 }
 
 void RenderManager::CopyRenderTargetToBackBuffer() {
@@ -114,6 +123,12 @@ void RenderManager::OnResize(int width, int height) {
 	                                                .data        = nullptr,
 	                                                .format      = DXGI_FORMAT_R8G8B8A8_UNORM,
 	                                                .textureType = Texture::TextureType::RenderTarget});
+
+	mStagingRenderTarget.Create(Texture::TextureCreateDesc{.width       = (uint32_t)width,
+	                                                       .height      = (uint32_t)height,
+	                                                       .data        = nullptr,
+	                                                       .format      = DXGI_FORMAT_R8G8B8A8_UNORM,
+	                                                       .textureType = Texture::TextureType::Staging});
 }
 
 void RenderManager::SetupImGuiStyle() {
@@ -230,6 +245,23 @@ void RenderManager::UpdateScales() {
 			break;
 		}
 	}
+}
+
+void RenderManager::SaveScreenshot() {
+	if (!mScreenShotCommand) {
+		return;
+	}
+
+	auto& context = MM::Get<Framework>().Context();
+
+	context->CopyResource(mStagingRenderTarget.GetTexture2D().Get(), mRenderTarget.GetTexture2D().Get());
+
+	D3D11_MAPPED_SUBRESOURCE ms;
+	context->Map(mStagingRenderTarget.GetTexture2D().Get(), NULL, D3D11_MAP_READ, NULL, &ms);
+	stbi_write_png(mScreenShotCommand->outputPath.generic_string().c_str(), mViewport.Width, mViewport.Height, 4, ms.pData, ms.RowPitch);
+	context->Unmap(mStagingRenderTarget.GetTexture2D().Get(), NULL);
+
+	mScreenShotCommand = std::nullopt;
 }
 
 }  // namespace JR

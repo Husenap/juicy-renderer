@@ -39,6 +39,7 @@ using Microsoft::WRL::ComPtr;
 #include <GLFW/glfw3native.h>
 
 #include <stb_image.h>
+#include <stb_image_write.h>
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/ext/matrix_clip_space.hpp>

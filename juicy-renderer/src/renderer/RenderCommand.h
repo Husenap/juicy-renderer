@@ -15,6 +15,22 @@ struct RCSprite {
 	StringId backTexture;
 };
 
-using RenderCommand = std::variant<RCSprite, RCClearColor>;
+struct RCLight {
+	glm::vec2 position;
+	float intensity;
+	float size;
+	glm::vec3 color;
+	float isBackLight;
+	float flickerSpeed;
+	float flickerIntensity;
+	float _padding[2];
+};
+
+struct RCScreenshot {
+	float time;
+	std::filesystem::path outputPath;
+};
+
+using RenderCommand = std::variant<RCSprite, RCClearColor, RCLight, RCScreenshot>;
 
 }  // namespace JR

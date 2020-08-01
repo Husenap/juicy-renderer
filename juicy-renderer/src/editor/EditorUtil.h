@@ -4,10 +4,10 @@ namespace JR {
 
 class EditorUtil {
 public:
-	static void SelectEntity() { Get().mSelectedEntity = std::nullopt; }
+	static void SelectEntity() { Get().mSelectedEntity = entt::null; }
 	static void SelectEntity(entt::entity entity) { Get().mSelectedEntity = entity; }
 
-	static std::optional<entt::entity> GetSelectedEntity() { return Get().mSelectedEntity; }
+	static entt::entity GetSelectedEntity() { return Get().mSelectedEntity; }
 
 private:
 	EditorUtil() {}
@@ -17,7 +17,7 @@ private:
 		return instance;
 	}
 
-	std::optional<entt::entity> mSelectedEntity;
+	entt::entity mSelectedEntity = entt::null;
 };
 
 }  // namespace JR
