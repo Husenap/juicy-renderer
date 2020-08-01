@@ -36,12 +36,14 @@ void ExporterManager::Prompt() {
 		ImGui::OpenPopup(POPUP_EXPORT_SEQUENCE);
 	}
 	if (ImGui::BeginPopupModal(POPUP_EXPORT_SEQUENCE, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::SetNextItemWidth(60);
 		ImGui::DragInt("Frame Rate", &mConfig.frameRate, 1, 1, 240);
+		ImGui::SetNextItemWidth(60);
 		ImGui::DragInt("Seconds", &mConfig.seconds, 1, 1, 60);
 
 		ImGui::Separator();
 
-		if (ImGui::Button("Export", ImVec2(120, 0))) {
+		if (ImGui::Button("Export", ImVec2(100, 0))) {
 			auto saveFile = JFD::FileDialog::SaveFile({L"png"});
 			if (saveFile) {
 				mConfig.path = *saveFile;
@@ -52,7 +54,7 @@ void ExporterManager::Prompt() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+		if (ImGui::Button("Cancel", ImVec2(100, 0))) {
 			GoToState(State::Idle);
 		}
 		ImGui::EndPopup();
@@ -81,9 +83,10 @@ void ExporterManager::Export() {
 		const auto text = fmt::format("Frame {}/{}", mConfig.currentFrame, numFrames);
 		float progress  = mConfig.currentFrame / static_cast<float>(numFrames);
 
+		ImGui::SetNextItemWidth(200.f);
 		ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), text.c_str());
 
-		if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+		if (ImGui::Button("Cancel", ImVec2(200.f, 0))) {
 			GoToState(State::Idle);
 		}
 		ImGui::EndPopup();

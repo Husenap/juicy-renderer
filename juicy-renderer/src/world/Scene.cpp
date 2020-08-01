@@ -46,11 +46,13 @@ void Scene::Update(float time) {
 		auto& light     = lightView.get<Light>(entity);
 
 		renderer.Submit(RCLight{
-		    .position    = transform.position,
-		    .intensity   = light.intensity,
-		    .size        = light.size,
-		    .color       = light.color,
-		    .isBackLight = static_cast<float>(light.direction == Components::LightDirection::Back),
+		    .position         = transform.position,
+		    .intensity        = light.intensity,
+		    .size             = light.size,
+		    .color            = light.color,
+		    .isBackLight      = static_cast<float>(light.direction == Components::LightDirection::Back),
+		    .flickerSpeed     = light.flickerSpeed,
+		    .flickerIntensity = light.flickerIntensity,
 		});
 	}
 }

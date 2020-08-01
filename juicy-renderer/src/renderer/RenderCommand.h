@@ -21,6 +21,9 @@ struct RCLight {
 	float size;
 	glm::vec3 color;
 	float isBackLight;
+	float flickerSpeed;
+	float flickerIntensity;
+	float _padding[2];
 };
 
 struct RCScreenshot {

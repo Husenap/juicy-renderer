@@ -64,11 +64,11 @@ void PSMain(in PixelInput input, out PixelOutput output) {
 
         float attenuation = 1.f / (1.0f + pow(dist / light.size, 2.0f));
 
-        float flickerSpeed = 10.f; 
-        float flicker = cos(flickerSpeed * 0.732f * Time) * sin(flickerSpeed * 1.731f * Time) * 0.5f + 0.5f;
+        float t = Time + length(light.position);
+        float flicker = cos(light.flickerSpeed * 0.732f * t) * sin(light.flickerSpeed * 1.731f * t) * 0.5f + 0.5f;
 
         col += saturate(attenuation) *
-                saturate(flicker) *
+                saturate(1.0f - flicker * light.flickerIntensity) *
                 light.intensity *
                 light.color *
                 lerp(color.rgb, back.rgb, light.isBackLight) * color.a;

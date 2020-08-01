@@ -29,7 +29,7 @@ cbuffer BufferData : register(b0) {
     float4 Resolution;
     float2 Stretch;
     float Time;
-    float _BufferDataPadding[1];
+    float1 _BufferDataPadding;
 }
 
 struct LightData{
@@ -38,9 +38,12 @@ struct LightData{
     float size;
     float3 color;
     float isBackLight;
+    float flickerSpeed;
+    float flickerIntensity;
+    float2 _padding;
 };
 cbuffer LightBufferData : register(b1) {
     LightData Lights[64];
     int NumLights;
-    float _LightBufferDataPadding[3];
+    float3 _LightBufferDataPadding;
 }
